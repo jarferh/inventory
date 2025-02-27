@@ -1,0 +1,228 @@
+/* Custom styling for statistics cards */
+.stat-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Timeline customization */
+.timeline {
+    position: relative;
+    padding: 1rem 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-badge {
+    position: absolute;
+    left: 0;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-panel {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+/* Quick action buttons */
+.quick-action-btn {
+    transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.quick-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quick-action-btn:hover::before {
+    opacity: 1;
+}
+
+/* System status customization */
+.system-status .list-group-item {
+    transition: background-color 0.2s ease;
+}
+
+.system-status .list-group-item:hover {
+    background-color: #e9ecef !important;
+}
+
+/* Performance chart container */
+.performance-chart-container {
+    position: relative;
+    margin: auto;
+    height: 250px;
+}
+
+/* Custom DataTables styling */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.375rem 0.75rem;
+    margin: 0 0.125rem;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    color: white !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-item {
+        padding-left: 2rem;
+    }
+}
+/* Add these styles to your existing custom.css */
+
+/* Timeline styles */
+.timeline {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-item:not(:last-child):before {
+    content: '';
+    position: absolute;
+    left: 0.85rem;
+    top: 1.5rem;
+    bottom: -0.5rem;
+    width: 2px;
+    background: var(--tblr-border-color);
+}
+
+.timeline-badge {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-content {
+    padding: 0.75rem;
+    background: var(--tblr-bg-surface);
+    border-radius: var(--tblr-border-radius);
+    border: 1px solid var(--tblr-border-color);
+}
+
+/* Quick action buttons */
+.btn-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.btn-icon:hover {
+    transform: translateY(-2px);
+}
+
+/* Stats cards */
+.stat-card {
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+/* System status */
+.datagrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.datagrid-item {
+    padding: 0.5rem;
+}
+
+.datagrid-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--tblr-muted);
+}
+
+.datagrid-content {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}
+
+/* Chart container */
+#salesChart {
+    margin: 0 -1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .datagrid {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline-item {
+        padding-left: 2rem;
+    }
+    
+    .timeline-badge {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
