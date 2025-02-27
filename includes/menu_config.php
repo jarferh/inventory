@@ -1,5 +1,6 @@
 <?php
-function getMenuByRole($role) {
+function getMenuByRole($role)
+{
     $defaultMenus = [
         [
             'title' => 'Dashboard',
@@ -86,21 +87,16 @@ function getMenuByRole($role) {
                 'icon' => 'shopping-cart',
                 'link' => 'sales.php',
                 'permission' => 'manage_sales'
-            ],
-            [
-                'title' => 'Products',
-                'icon' => 'package',
-                'link' => 'products.php',
-                'permission' => 'view_products'
             ]
         ]
     ];
-    
+
     return $menus[$role] ?? $defaultMenus;
 }
 
 // Function to check if menu item should be visible
-function shouldShowMenuItem($menuItem, $currentUserPermissions) {
-    return isset($menuItem['permission']) && 
-           in_array($menuItem['permission'], $currentUserPermissions);
+function shouldShowMenuItem($menuItem, $currentUserPermissions)
+{
+    return isset($menuItem['permission']) &&
+        in_array($menuItem['permission'], $currentUserPermissions);
 }

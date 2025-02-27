@@ -11,7 +11,7 @@ class Auth {
     
     public function requireLogin() {
         if (!$this->isLoggedIn()) {
-            header('Location: login.php');
+            header('Location: index.php'); // Changed to index.php
             exit();
         }
         
@@ -45,9 +45,23 @@ class Auth {
             return false;
         }
     }
+
+    public function requireAdmin() {
+        if (!$this->isLoggedIn() || !$this->isAdmin()) {
+            $_SESSION['error'] = "You don't have permission to access this page.";
+            header('Location: index.php');
+            exit;
+        }
+        return true;
+    }
     
     public function isLoggedIn() {
         return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    }
+
+    public function isAdmin() {
+        return isset($_SESSION['role']) && $_SESSION['role'] === 'admin' &&
+               $this->hasPermission('admin_access');
     }
     
     public function login($username, $password) {
@@ -67,6 +81,9 @@ class Auth {
                 $_SESSION['user'] = $user;
                 $_SESSION['role'] = $user['role_name'];
                 $_SESSION['permissions'] = json_decode($user['permissions'], true);
+                
+                // Update last login timestamp
+                $this->updateLastLogin($user['id']);
                 
                 // Log successful login
                 $this->logActivity('login', 'User logged in successfully');
@@ -90,13 +107,26 @@ class Auth {
         session_unset();
         session_destroy();
         
-        header('Location: login.php');
+        header('Location: index.php'); // Changed to index.php
         exit();
     }
     
     public function hasPermission($permission) {
         return isset($_SESSION['permissions']) && 
                in_array($permission, $_SESSION['permissions']);
+    }
+
+    private function updateLastLogin($userId) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE users 
+                SET last_login = NOW() 
+                WHERE id = ?
+            ");
+            $stmt->execute([$userId]);
+        } catch (PDOException $e) {
+            error_log("Update Last Login Error: " . $e->getMessage());
+        }
     }
     
     private function logActivity($action, $description, $user_id = null) {
@@ -119,4 +149,42 @@ class Auth {
             error_log("Activity Log Error: " . $e->getMessage());
         }
     }
+
+    // New helper methods for role and permission management
+    public function getUserRoles() {
+        try {
+            $stmt = $this->db->query("SELECT * FROM roles ORDER BY name");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get Roles Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getCurrentUserData() {
+        if (!$this->isLoggedIn()) {
+            return null;
+        }
+        return $_SESSION['user'] ?? null;
+    }
 }
+
+// Make sure to have this SQL for the roles table if you haven't already:
+/*
+CREATE TABLE IF NOT EXISTS roles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    permissions JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default admin role
+INSERT INTO roles (name, permissions) VALUES 
+('admin', '["admin_access", "manage_users", "manage_roles", "manage_products", "manage_sales", "view_reports"]'),
+('user', '["manage_products", "manage_sales", "view_reports"]')
+ON DUPLICATE KEY UPDATE permissions = VALUES(permissions);
+
+-- Add last_login column to users table if not exists
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP NULL;
+*/

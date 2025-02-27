@@ -59,16 +59,16 @@ try {
         LEFT JOIN products p ON si.product_id = p.id
         WHERE DATE(s.created_at) BETWEEN ? AND ?
     ";
-    
+
     $params = [$startDate, $endDate];
-    
+
     if ($status) {
         $query .= " AND s.payment_status = ?";
         $params[] = $status;
     }
-    
+
     $query .= " GROUP BY s.id ORDER BY s.created_at DESC";
-    
+
     $stmt = $db->prepare($query);
     $stmt->execute($params);
     $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -83,8 +83,7 @@ try {
             $totals['pending'] += floatval($sale['total_amount']);
         }
     }
-
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     $error = "Database error: " . $e->getMessage();
     error_log($e->getMessage());
 }
@@ -106,7 +105,7 @@ include 'templates/header.php';
                     <div class="btn-list">
                         <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#newSaleModal">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
                             </svg>
@@ -122,11 +121,11 @@ include 'templates/header.php';
     <div class="page-body">
         <div class="container-xl">
             <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+                <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
             <?php if ($success): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+                <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
             <?php endif; ?>
 
             <!-- Sales Statistics Cards -->
@@ -230,7 +229,7 @@ include 'templates/header.php';
                             <label class="form-label">&nbsp;</label>
                             <button type="submit" class="btn btn-primary w-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                     <circle cx="10" cy="10" r="7" />
                                     <line x1="21" y1="21" x2="15" y2="15" />
                                 </svg>
@@ -261,53 +260,53 @@ include 'templates/header.php';
                             </thead>
                             <tbody>
                                 <?php foreach ($sales as $sale): ?>
-                                <tr>
-                                    <td>
-                                        <a href="#" class="text-reset" data-bs-toggle="modal" data-bs-target="#viewSaleModal" data-sale-id="<?= $sale['id'] ?>">
-                                            <?= htmlspecialchars($sale['invoice_number']) ?>
-                                        </a>
-                                    </td>
-                                    <td><?= htmlspecialchars($sale['customer_name'] ?? 'Walk-in Customer') ?></td>
-                                    <td><?= $sale['item_count'] ?? '0' ?></td>
-                                    <td>₦<?= number_format($sale['total_amount'], 2) ?></td>
-                                    <td>₦<?= number_format($sale['profit'], 2) ?></td>
-                                    <td>
-                                        <?php
-                                        $statusClass = match($sale['payment_status']) {
-                                            'paid' => 'success',
-                                            'partial' => 'warning',
-                                            default => 'danger'
-                                        };
-                                        ?>
-                                        <span class="badge bg-<?= $statusClass ?>-lt">
-                                            <?= ucfirst($sale['payment_status']) ?>
-                                        </span>
-                                    </td>
-                                    <td><?= htmlspecialchars($sale['created_by_user']) ?></td>
-                                    <td><?= date('Y-m-d H:i', strtotime($sale['created_at'])) ?></td>
-                                    <td>
-                                        <div class="btn-list flex-nowrap">
-                                            <a href="#" class="btn btn-icon btn-primary" onclick="printInvoice(<?= $sale['id'] ?>)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                    <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
-                                                    <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
-                                                    <rect x="7" y="13" width="10" height="8" rx="2" />
-                                                </svg>
+                                    <tr>
+                                        <td>
+                                            <a href="#" class="text-reset" data-bs-toggle="modal" data-bs-target="#viewSaleModal" data-sale-id="<?= $sale['id'] ?>">
+                                                <?= htmlspecialchars($sale['invoice_number']) ?>
                                             </a>
-                                            <?php if ($sale['payment_status'] !== 'paid'): ?>
-                                            <a href="#" class="btn btn-icon btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" data-sale-id="<?= $sale['id'] ?>">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                    <rect x="7" y="9" width="14" height="10" rx="2" />
-                                                    <circle cx="14" cy="14" r="2" />
-                                                    <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2" />
-                                                </svg>
-                                            </a>
-                                            <?php endif; ?>
-                                        </div>
                                         </td>
-                                </tr>
+                                        <td><?= htmlspecialchars($sale['customer_name'] ?? 'Walk-in Customer') ?></td>
+                                        <td><?= $sale['item_count'] ?? '0' ?></td>
+                                        <td>₦<?= number_format($sale['total_amount'], 2) ?></td>
+                                        <td>₦<?= number_format($sale['profit'], 2) ?></td>
+                                        <td>
+                                            <?php
+                                            $statusClass = match ($sale['payment_status']) {
+                                                'paid' => 'success',
+                                                'partial' => 'warning',
+                                                default => 'danger'
+                                            };
+                                            ?>
+                                            <span class="badge bg-<?= $statusClass ?>-lt">
+                                                <?= ucfirst($sale['payment_status']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= htmlspecialchars($sale['created_by_user']) ?></td>
+                                        <td><?= date('Y-m-d H:i', strtotime($sale['created_at'])) ?></td>
+                                        <td>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="#" class="btn btn-icon btn-primary" onclick="printInvoice(<?= $sale['id'] ?>)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
+                                                        <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
+                                                        <rect x="7" y="13" width="10" height="8" rx="2" />
+                                                    </svg>
+                                                </a>
+                                                <?php if ($sale['payment_status'] !== 'paid'): ?>
+                                                    <a href="#" class="btn btn-icon btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" data-sale-id="<?= $sale['id'] ?>">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <rect x="7" y="9" width="14" height="10" rx="2" />
+                                                            <circle cx="14" cy="14" r="2" />
+                                                            <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2" />
+                                                        </svg>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -472,51 +471,51 @@ include 'templates/header.php';
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize DataTable
-    const table = new DataTable('.table', {
-        pageLength: 10,
-        responsive: true,
-        dom: 'Bfrtip',
-        buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
-        ]
-    });
-
-    // Handle View Sale Modal
-    const viewSaleModal = document.getElementById('viewSaleModal');
-    if (viewSaleModal) {
-        viewSaleModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const saleId = button.getAttribute('data-sale-id');
-            
-            // Load sale details
-            fetch(`actions/get_sale_details.php?id=${saleId}`)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('saleDetails').innerHTML = html;
-                });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataTable
+        const table = new DataTable('.table', {
+            pageLength: 10,
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
         });
-    }
 
-    // Handle Add Payment Modal
-    const addPaymentModal = document.getElementById('addPaymentModal');
-    if (addPaymentModal) {
-        addPaymentModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const saleId = button.getAttribute('data-sale-id');
-            document.getElementById('payment_sale_id').value = saleId;
-        });
-    }
+        // Handle View Sale Modal
+        const viewSaleModal = document.getElementById('viewSaleModal');
+        if (viewSaleModal) {
+            viewSaleModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const saleId = button.getAttribute('data-sale-id');
 
-    // Handle New Sale Form
-    const newSaleForm = document.getElementById('newSaleForm');
-    if (newSaleForm) {
-        // Add item row
-        document.getElementById('addItemRow').addEventListener('click', function() {
-            const tbody = document.querySelector('#itemsTable tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
+                // Load sale details
+                fetch(`actions/get_sale_details.php?id=${saleId}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('saleDetails').innerHTML = html;
+                    });
+            });
+        }
+
+        // Handle Add Payment Modal
+        const addPaymentModal = document.getElementById('addPaymentModal');
+        if (addPaymentModal) {
+            addPaymentModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const saleId = button.getAttribute('data-sale-id');
+                document.getElementById('payment_sale_id').value = saleId;
+            });
+        }
+
+        // Handle New Sale Form
+        const newSaleForm = document.getElementById('newSaleForm');
+        if (newSaleForm) {
+            // Add item row
+            document.getElementById('addItemRow').addEventListener('click', function() {
+                const tbody = document.querySelector('#itemsTable tbody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
                 <td>
                     <select class="form-select product-select" name="items[product_id][]" required>
                         <option value="">Select Product</option>
@@ -544,87 +543,102 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                 </td>
             `;
-            tbody.appendChild(row);
-            
-            // Load products for the new row
-            loadProducts(row.querySelector('.product-select'));
-        });
+                tbody.appendChild(row);
 
-        // Calculate totals
-        function calculateTotals() {
-            let subtotal = 0;
-            document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
-                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
-                const price = parseFloat(row.querySelector('.price-input').value) || 0;
-                const total = quantity * price;
-                row.querySelector('.row-total').textContent = total.toFixed(2);
-                subtotal += total;
+                // Load products for the new row
+                loadProducts(row.querySelector('.product-select'));
             });
 
-            const tax = 0; // Calculate tax if needed
-            const total = subtotal + tax;
-
-            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
-            document.getElementById('tax').textContent = tax.toFixed(2);
-            document.getElementById('total').textContent = total.toFixed(2);
-        }
-
-        // Load products function
-        function loadProducts(select) {
-            fetch('actions/get_products.php')
-                .then(response => response.json())
-                .then(products => {
-                    products.forEach(product => {
-                        const option = new Option(
-                            `${product.name} (${product.quantity} ${product.unit_type} available)`, 
-                            product.id
-                        );
-                        option.dataset.price = product.selling_price;
-                        select.appendChild(option);
-                    });
+            // Calculate totals
+            function calculateTotals() {
+                let subtotal = 0;
+                document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
+                    const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                    const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                    const total = quantity * price;
+                    row.querySelector('.row-total').textContent = total.toFixed(2);
+                    subtotal += total;
                 });
-        }
 
-        // Handle product selection
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('product-select')) {
-                const row = e.target.closest('tr');
-                const option = e.target.selectedOptions[0];
-                if (option.dataset.price) {
-                    row.querySelector('.price-input').value = option.dataset.price;
+                const tax = 0; // Calculate tax if needed
+                const total = subtotal + tax;
+
+                document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+                document.getElementById('tax').textContent = tax.toFixed(2);
+                document.getElementById('total').textContent = total.toFixed(2);
+            }
+
+            // Replace the loadProducts function in your existing script with this:
+            function loadProducts(select) {
+                fetch('actions/get_products.php')
+                    .then(response => response.json())
+                    .then(products => {
+                        select.innerHTML = '<option value="">Select Product</option>';
+                        products.forEach(product => {
+                            const option = document.createElement('option');
+                            option.value = product.id;
+                            option.textContent = product.display_name;
+                            option.dataset.price = product.selling_price;
+                            option.dataset.available = product.quantity;
+                            option.dataset.unit = product.unit_type;
+                            select.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading products:', error));
+            }
+
+            // Add quantity validation
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('quantity-input')) {
+                    const row = e.target.closest('tr');
+                    const select = row.querySelector('.product-select');
+                    const option = select.selectedOptions[0];
+
+                    if (option && option.dataset.available) {
+                        const available = parseFloat(option.dataset.available);
+                        const quantity = parseFloat(e.target.value) || 0;
+
+                        if (quantity > available) {
+                            alert(`Only ${available} ${option.dataset.unit} available in stock`);
+                            e.target.value = available;
+                        }
+                    }
                     calculateTotals();
                 }
-            }
-        });
+            });
 
-        // Handle quantity changes
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('quantity-input')) {
-                calculateTotals();
-            }
-        });
+            // Update product selection handler
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('product-select')) {
+                    const row = e.target.closest('tr');
+                    const option = e.target.selectedOptions[0];
+                    const quantityInput = row.querySelector('.quantity-input');
+                    const priceInput = row.querySelector('.price-input');
 
-        // Remove row function
-        window.removeRow = function(button) {
-            button.closest('tr').remove();
-            calculateTotals();
+                    if (option && option.dataset.price) {
+                        priceInput.value = option.dataset.price;
+                        quantityInput.max = option.dataset.available;
+                        quantityInput.placeholder = `Max: ${option.dataset.available} ${option.dataset.unit}`;
+                        calculateTotals();
+                    }
+                }
+            });
+
+            // Form submission
+            newSaleForm.addEventListener('submit', function(e) {
+                if (!newSaleForm.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                newSaleForm.classList.add('was-validated');
+            });
+        }
+
+        // Print invoice function
+        window.printInvoice = function(saleId) {
+            window.open(`print_invoice.php?id=${saleId}`, '_blank');
         };
-
-        // Form submission
-        newSaleForm.addEventListener('submit', function(e) {
-            if (!newSaleForm.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            newSaleForm.classList.add('was-validated');
-        });
-    }
-
-    // Print invoice function
-    window.printInvoice = function(saleId) {
-        window.open(`print_invoice.php?id=${saleId}`, '_blank');
-    };
-});
+    });
 </script>
 
 <?php include 'templates/footer.php'; ?>

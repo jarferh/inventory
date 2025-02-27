@@ -7,18 +7,9 @@ require_once 'includes/functions.php';
 // At the top of your index.php, after includes
 $currentPage = 'dashboard'; // This should match the menu item title in lowercase
 // Initialize Auth and check login
+// Initialize Auth
 $auth = new Auth();
-
-try {
-    if (!$auth->requireLogin()) {
-        header('Location: login.php');
-        exit();
-    }
-} catch (Exception $e) {
-    error_log("Authentication Error: " . $e->getMessage());
-    header('Location: login.php?error=auth_error');
-    exit();
-}
+$auth->requireLogin();
 
 // Set page variables
 $pageTitle = "Dashboard";
