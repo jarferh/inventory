@@ -40,7 +40,9 @@ try {
 
     if ($search) {
         $query .= " AND (p.name LIKE ? OR p.code LIKE ? OR p.description LIKE ?)";
-        $params = array_merge($params, ["%$search%", "%$search%", "%$search%"]);
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
     }
 
     if ($category) {
@@ -234,7 +236,88 @@ include 'templates/header.php';
         </div>
     </div>
 </div>
-
+<!-- Edit Product Modal -->
+<div class="modal modal-blur fade" id="editProductModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="actions/product_actions.php" method="post" class="needs-validation" novalidate>
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="id" id="edit_id">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label required">Product Code</label>
+                            <input type="text" class="form-control" name="code" id="edit_code" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Product Name</label>
+                            <input type="text" class="form-control" name="name" id="edit_name" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label required">Category</label>
+                            <select class="form-select" name="category_id" id="edit_category_id" required>
+                                <option value="">Select Category</option>
+                                <?php foreach ($categories as $category): ?>
+                                    <option value="<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Unit Type</label>
+                            <select class="form-select" name="unit_type" id="edit_unit_type" required>
+                                <option value="piece">Piece</option>
+                                <option value="kg">Kilogram</option>
+                                <option value="liter">Liter</option>
+                                <option value="box">Box</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label required">Quantity</label>
+                            <input type="number" class="form-control" name="quantity" id="edit_quantity" step="0.01" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label required">Minimum Stock Level</label>
+                            <input type="number" class="form-control" name="min_stock_level" id="edit_min_stock_level" step="0.01" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" id="edit_status">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label required">Buying Price</label>
+                            <input type="number" class="form-control" name="buying_price" id="edit_buying_price" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Selling Price</label>
+                            <input type="number" class="form-control" name="selling_price" id="edit_selling_price" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- Add Product Modal -->
 <div class="modal modal-blur fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -444,11 +527,17 @@ include 'templates/header.php';
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteProductForm" action="actions/product_actions.php" method="post">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" id="delete_product_id">
-                    <button type="submit" class="btn btn-danger">Yes, delete product</button>
-                </form>
+                <button type="button" class="btn btn-danger ms-auto" id="confirmDelete">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <line x1="4" y1="7" x2="20" y2="7" />
+                        <line x1="10" y1="11" x2="10" y2="17" />
+                        <line x1="14" y1="11" x2="14" y2="17" />
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                    </svg>
+                    Yes, delete product
+                </button>
             </div>
         </div>
     </div>
@@ -457,138 +546,169 @@ include 'templates/header.php';
 <!-- Initialize DataTable and handle modals -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const CURRENT_TIME = '2025-02-28 16:55:52';
+        const CURRENT_USER = 'jarferh';
+
         // Initialize DataTable
         const table = new DataTable('.table', {
             pageLength: 10,
             responsive: true,
             dom: 'Bfrtip',
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
         });
 
-        // Handle Edit Modal
-        const editModal = document.getElementById('editProductModal');
-        if (editModal) {
-            editModal.addEventListener('show.bs.modal', function(event) {
+        // Handle Add Product Form
+        const addProductForm = document.getElementById('addProductForm');
+        if (addProductForm) {
+            addProductForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                formData.append('created_at', CURRENT_TIME);
+                formData.append('created_by', CURRENT_USER);
+
+                fetch('actions/product_actions.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(result => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
+                        modal.hide();
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error adding product: ' + error.message);
+                    });
+            });
+        }
+
+        // Handle Edit Product Modal
+        const editProductModal = document.getElementById('editProductModal');
+        if (editProductModal) {
+            editProductModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const product = JSON.parse(button.getAttribute('data-product'));
 
                 // Populate form fields
-                document.getElementById('edit_id').value = product.id;
-                document.getElementById('edit_code').value = product.code;
-                document.getElementById('edit_name').value = product.name;
-                // ... populate other fields
+                const form = this.querySelector('form');
+                form.querySelector('#edit_id').value = product.id;
+                form.querySelector('#edit_code').value = product.code;
+                form.querySelector('#edit_name').value = product.name;
+                form.querySelector('#edit_category_id').value = product.category_id;
+                form.querySelector('#edit_unit_type').value = product.unit_type;
+                form.querySelector('#edit_quantity').value = product.quantity;
+                form.querySelector('#edit_min_stock_level').value = product.min_stock_level;
+                form.querySelector('#edit_buying_price').value = product.buying_price;
+                form.querySelector('#edit_selling_price').value = product.selling_price;
+                form.querySelector('#edit_status').value = product.status;
+                form.querySelector('#edit_description').value = product.description || '';
+            });
+
+            // Handle Edit Form Submit
+            const editForm = editProductModal.querySelector('form');
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                formData.append('updated_at', CURRENT_TIME);
+                formData.append('updated_by', CURRENT_USER);
+
+                fetch('actions/product_actions.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(result => {
+                        const modal = bootstrap.Modal.getInstance(editProductModal);
+                        modal.hide();
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error updating product: ' + error.message);
+                    });
             });
         }
 
-        // Handle Delete Modal
-        const deleteModal = document.getElementById('deleteProductModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function(event) {
+        // Handle Delete Product
+        const deleteProductModal = document.getElementById('deleteProductModal');
+        if (deleteProductModal) {
+            // Set product ID when delete modal opens
+            deleteProductModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const productId = button.getAttribute('data-product-id');
                 document.getElementById('delete_product_id').value = productId;
             });
-        }
 
-        // Form Validation
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
+            // Handle delete form submission
+            const deleteForm = document.getElementById('deleteProductForm');
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    fetch(this.action, {
+                            method: 'POST',
+                            body: new FormData(this)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(result => {
+                            // Close the modal
+                            const modal = bootstrap.Modal.getInstance(deleteProductModal);
+                            modal.hide();
+
+                            // Show success message
+                            const successDiv = document.createElement('div');
+                            successDiv.className = 'alert alert-success';
+                            successDiv.textContent = 'Product deleted successfully';
+                            document.querySelector('.container-xl').insertBefore(successDiv, document.querySelector('.card'));
+
+                            // Reload the page after a short delay
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error deleting product: ' + error.message);
+                        });
+                });
+            }
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
             form.addEventListener('submit', function(event) {
                 if (!form.checkValidity()) {
                     event.preventDefault();
                     event.stopPropagation();
+                } else {
+                    // Log form submission
+                    console.log('Form submitted:', new FormData(form));
                 }
                 form.classList.add('was-validated');
-            });
+            }, false);
         });
 
-        // Success Message Auto-hide
-        const successAlert = document.querySelector('.alert-success');
-        if (successAlert) {
-            setTimeout(() => {
-                successAlert.style.transition = 'opacity 0.5s ease';
-                successAlert.style.opacity = '0';
-                setTimeout(() => successAlert.remove(), 500);
-            }, 3000);
-        }
+        // Display session messages
+        <?php if (isset($_SESSION['error'])): ?>
+            alert('Error: <?= addslashes($_SESSION['error']) ?>');
+        <?php unset($_SESSION['error']);
+        endif; ?>
+
+        <?php if (isset($_SESSION['success'])): ?>
+            alert('Success: <?= addslashes($_SESSION['success']) ?>');
+        <?php unset($_SESSION['success']);
+        endif; ?>
     });
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle Add Category Form submission
-        const addCategoryForm = document.getElementById('addCategoryForm');
-        if (addCategoryForm) {
-            addCategoryForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                fetch(this.action, {
-                        method: 'POST',
-                        body: new FormData(this)
-                    })
-                    .then(response => response.text())
-                    .then(result => {
-                        // Refresh the categories dropdown
-                        fetch('actions/get_categories.php')
-                            .then(response => response.json())
-                            .then(categories => {
-                                const select = document.querySelector('select[name="category_id"]');
-                                select.innerHTML = '<option value="">Select Category</option>';
-                                categories.forEach(category => {
-                                    select.innerHTML += `<option value="${category.id}">${category.name}</option>`;
-                                });
-                            });
-
-                        // Close modal and show success message
-                        bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
-                        this.reset();
-
-                        // Show success message
-                        const toast = new bootstrap.Toast(document.createElement('div'));
-                        toast.show();
-                    })
-                    .catch(error => console.error('Error:', error));
-            });
-        }
-
-        // Form validation
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                if (!this.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                this.classList.add('was-validated');
-            });
-        });
-    });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Form validation
-    const forms = document.querySelectorAll('.needs-validation');
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            } else {
-                // Log form submission
-                console.log('Form submitted:', new FormData(form));
-            }
-            form.classList.add('was-validated');
-        }, false);
-    });
-
-    // Display session messages
-    <?php if (isset($_SESSION['error'])): ?>
-    alert('Error: <?= addslashes($_SESSION['error']) ?>');
-    <?php unset($_SESSION['error']); endif; ?>
-
-    <?php if (isset($_SESSION['success'])): ?>
-    alert('Success: <?= addslashes($_SESSION['success']) ?>');
-    <?php unset($_SESSION['success']); endif; ?>
-});
 </script>
 <?php
 // Create the product actions handler

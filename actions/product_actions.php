@@ -2,6 +2,18 @@
 // Enable error reporting
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+// At the top of product_actions.php, after the initial requires
+error_log("Request received: " . print_r($_POST, true));
+
+// Add this function for debugging
+function debug_to_console($data)
+{
+    $output = $data;
+    if (is_array($output))
+        $output = implode(',', $output);
+
+    echo "<script>console.log('Debug Objects: " . $output . "' );</script>";
+}
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -19,139 +31,142 @@ $auth->requireLogin();
 // Get database connection
 $db = Database::getInstance()->getConnection();
 
-// Debug log function
-function debugLog($message, $data = null) {
-    $logMessage = date('Y-m-d H:i:s') . " - " . $message;
-    if ($data) {
-        $logMessage .= " - Data: " . print_r($data, true);
-    }
-    error_log($logMessage . "\n", 3, "../logs/debug.log");
-}
-
 try {
-    debugLog("Request Method: " . $_SERVER['REQUEST_METHOD']);
-    debugLog("POST Data", $_POST);
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
-        debugLog("Action: " . $action);
-        
+
         switch ($action) {
             case 'add_category':
-                debugLog("Processing add_category");
                 if (empty($_POST['category_name'])) {
                     throw new Exception("Category name is required");
                 }
-                
-                try {
-                    // Check if category exists
-                    $stmt = $db->prepare("SELECT id FROM categories WHERE name = ?");
-                    $stmt->execute([$_POST['category_name']]);
-                    if ($stmt->rowCount() > 0) {
-                        throw new Exception("Category already exists");
-                    }
 
-                    // Insert category
-                    $stmt = $db->prepare("
-                        INSERT INTO categories (name, description, created_by)
-                        VALUES (?, ?, ?)
-                    ");
-                    
-                    $result = $stmt->execute([
-                        $_POST['category_name'],
-                        $_POST['category_description'] ?? '',
-                        $_SESSION['user_id'] ?? 1
-                    ]);
+                $stmt = $db->prepare("
+                    INSERT INTO categories (name, description, created_by)
+                    VALUES (?, ?, ?)
+                ");
 
-                    if (!$result) {
-                        throw new Exception("Failed to insert category: " . implode(" ", $stmt->errorInfo()));
-                    }
+                $stmt->execute([
+                    $_POST['category_name'],
+                    $_POST['category_description'] ?? '',
+                    $_SESSION['user_id'] ?? 1
+                ]);
 
-                    $_SESSION['success'] = "Category added successfully";
-                    debugLog("Category added successfully", [
-                        'id' => $db->lastInsertId(),
-                        'name' => $_POST['category_name']
-                    ]);
-                    
-                } catch (PDOException $e) {
-                    debugLog("Database Error: " . $e->getMessage());
-                    throw new Exception("Database error: " . $e->getMessage());
-                }
+                $_SESSION['success'] = "Category added successfully";
                 break;
 
             case 'add':
-                debugLog("Processing add product");
+                // Validate required fields
+                $required = ['code', 'name', 'category_id', 'unit_type', 'quantity', 'min_stock_level', 'buying_price', 'selling_price'];
+                foreach ($required as $field) {
+                    if (empty($_POST[$field])) {
+                        throw new Exception("Field {$field} is required");
+                    }
+                }
+
+                $stmt = $db->prepare("
+                    INSERT INTO products (
+                        code, name, category_id, unit_type, quantity, 
+                        min_stock_level, buying_price, selling_price, 
+                        description, status, created_by
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+
+                $stmt->execute([
+                    $_POST['code'],
+                    $_POST['name'],
+                    $_POST['category_id'],
+                    $_POST['unit_type'],
+                    $_POST['quantity'],
+                    $_POST['min_stock_level'],
+                    $_POST['buying_price'],
+                    $_POST['selling_price'],
+                    $_POST['description'] ?? '',
+                    $_POST['status'] ?? 'active',
+                    $_SESSION['user_id'] ?? 1
+                ]);
+
+                $_SESSION['success'] = "Product added successfully";
+                break;
+
+            case 'edit':
+                if (empty($_POST['id'])) {
+                    throw new Exception("Product ID is required");
+                }
+
+                $stmt = $db->prepare("
+                    UPDATE products 
+                    SET code = ?, name = ?, category_id = ?, unit_type = ?,
+                        quantity = ?, min_stock_level = ?, buying_price = ?,
+                        selling_price = ?, description = ?, status = ?,
+                        updated_at = NOW(), updated_by = ?
+                    WHERE id = ?
+                ");
+
+                $stmt->execute([
+                    $_POST['code'],
+                    $_POST['name'],
+                    $_POST['category_id'],
+                    $_POST['unit_type'],
+                    $_POST['quantity'],
+                    $_POST['min_stock_level'],
+                    $_POST['buying_price'],
+                    $_POST['selling_price'],
+                    $_POST['description'] ?? '',
+                    $_POST['status'] ?? 'active',
+                    $_SESSION['user_id'] ?? 1,
+                    $_POST['id']
+                ]);
+
+                $_SESSION['success'] = "Product updated successfully";
+                break;
+
+            case 'delete':
+                if (empty($_POST['id'])) {
+                    throw new Exception("Product ID is required");
+                }
+
                 try {
-                    // Validate required fields
-                    $required = ['code', 'name', 'category_id', 'unit_type', 'quantity', 'min_stock_level', 'buying_price', 'selling_price'];
-                    foreach ($required as $field) {
-                        if (!isset($_POST[$field]) || $_POST[$field] === '') {
-                            throw new Exception("Field {$field} is required");
-                        }
+                    // Start transaction
+                    $db->beginTransaction();
+
+                    // Check if product exists
+                    $stmt = $db->prepare("SELECT id FROM products WHERE id = ?");
+                    $stmt->execute([$_POST['id']]);
+                    if (!$stmt->fetch()) {
+                        throw new Exception("Product not found");
                     }
 
-                    // Check if product code exists
-                    $stmt = $db->prepare("SELECT id FROM products WHERE code = ?");
-                    $stmt->execute([$_POST['code']]);
-                    if ($stmt->rowCount() > 0) {
-                        throw new Exception("Product code already exists");
-                    }
-
-                    // Insert product
-                    $stmt = $db->prepare("
-                        INSERT INTO products (
-                            code, name, category_id, unit_type, 
-                            quantity, min_stock_level, buying_price, 
-                            selling_price, description, status, 
-                            created_by
-                        ) VALUES (
-                            ?, ?, ?, ?, 
-                            ?, ?, ?, 
-                            ?, ?, ?,
-                            ?
-                        )
-                    ");
-                    
-                    $result = $stmt->execute([
-                        $_POST['code'],
-                        $_POST['name'],
-                        $_POST['category_id'],
-                        $_POST['unit_type'],
-                        $_POST['quantity'],
-                        $_POST['min_stock_level'],
-                        $_POST['buying_price'],
-                        $_POST['selling_price'],
-                        $_POST['description'] ?? '',
-                        $_POST['status'] ?? 'active',
-                        $_SESSION['user_id'] ?? 1
-                    ]);
+                    // Delete the product
+                    $stmt = $db->prepare("DELETE FROM products WHERE id = ?");
+                    $result = $stmt->execute([$_POST['id']]);
 
                     if (!$result) {
-                        throw new Exception("Failed to insert product: " . implode(" ", $stmt->errorInfo()));
+                        throw new Exception("Failed to delete product");
                     }
 
-                    $_SESSION['success'] = "Product added successfully";
-                    debugLog("Product added successfully", [
-                        'id' => $db->lastInsertId(),
-                        'code' => $_POST['code']
-                    ]);
-                    
-                } catch (PDOException $e) {
-                    debugLog("Database Error: " . $e->getMessage());
-                    throw new Exception("Database error: " . $e->getMessage());
+                    $db->commit();
+                    $_SESSION['success'] = "Product deleted successfully";
+
+                    // Return success response
+                    http_response_code(200);
+                    echo "Success";
+                } catch (Exception $e) {
+                    $db->rollBack();
+                    http_response_code(500);
+                    echo "Error: " . $e->getMessage();
+                    exit;
                 }
                 break;
+
+            default:
+                throw new Exception("Invalid action");
         }
     }
 } catch (Exception $e) {
-    debugLog("Error: " . $e->getMessage());
     $_SESSION['error'] = $e->getMessage();
 }
 
-// Debug the redirect
-$redirect = $_SERVER['HTTP_REFERER'] ?? '../products.php';
-debugLog("Redirecting to: " . $redirect);
-
 // Redirect back
-header('Location: ' . $redirect);
+header('Location: ../products.php');
 exit;
