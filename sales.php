@@ -353,6 +353,7 @@ include 'templates/header.php';
                                 Add Item
                             </button>
                         </div>
+                        <!-- Replace the existing items table in the modal with this -->
                         <div class="table-responsive">
                             <table class="table table-vcenter" id="itemsTable">
                                 <thead>
@@ -365,22 +366,22 @@ include 'templates/header.php';
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Items will be added here -->
+                                    <!-- Items will be added here dynamically -->
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="3" class="text-end">Subtotal:</td>
-                                        <td>₦<span id="subtotal">0.00</span></td>
+                                        <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                        <td class="fw-bold">₦<span id="subtotal">0.00</span></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-end">Tax (0%):</td>
-                                        <td>₦<span id="tax">0.00</span></td>
+                                        <td colspan="3" class="text-end fw-bold">Tax (0%):</td>
+                                        <td class="fw-bold">₦<span id="tax">0.00</span></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-end">Total:</td>
-                                        <td>₦<span id="total">0.00</span></td>
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="fw-bold">₦<span id="total">0.00</span></td>
                                         <td></td>
                                     </tr>
                                 </tfoot>
@@ -472,8 +473,12 @@ include 'templates/header.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize DataTable
-        const table = new DataTable('.table', {
+        // Initialize constants
+        const CURRENT_TIME = '2025-02-28 14:56:13';
+        const CURRENT_USER = 'jarferh';
+
+        // Initialize DataTable only for the main sales table
+        const salesTable = new DataTable('.card-table', {
             pageLength: 10,
             responsive: true,
             dom: 'Bfrtip',
@@ -481,15 +486,12 @@ include 'templates/header.php';
                 'copy', 'csv', 'excel', 'pdf', 'print'
             ]
         });
-
         // Handle View Sale Modal
         const viewSaleModal = document.getElementById('viewSaleModal');
         if (viewSaleModal) {
             viewSaleModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const saleId = button.getAttribute('data-sale-id');
-
-                // Load sale details
                 fetch(`actions/get_sale_details.php?id=${saleId}`)
                     .then(response => response.text())
                     .then(html => {
@@ -498,58 +500,53 @@ include 'templates/header.php';
             });
         }
 
-        // Handle Add Payment Modal
-        const addPaymentModal = document.getElementById('addPaymentModal');
-        if (addPaymentModal) {
-            addPaymentModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const saleId = button.getAttribute('data-sale-id');
-                document.getElementById('payment_sale_id').value = saleId;
-            });
-        }
-
         // Handle New Sale Form
         const newSaleForm = document.getElementById('newSaleForm');
         if (newSaleForm) {
-            // Add item row
+            // Add item row function
+            // Add item row function
             document.getElementById('addItemRow').addEventListener('click', function() {
                 const tbody = document.querySelector('#itemsTable tbody');
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                <td>
-                    <select class="form-select product-select" name="items[product_id][]" required>
-                        <option value="">Select Product</option>
-                        <!-- Products will be loaded via AJAX -->
-                    </select>
-                </td>
-                <td>
-                    <input type="number" class="form-control quantity-input" name="items[quantity][]" 
-                           min="1" step="0.01" required>
-                </td>
-                <td>
-                    <input type="number" class="form-control price-input" name="items[price][]" 
-                           step="0.01" required readonly>
-                </td>
-                <td>₦<span class="row-total">0.00</span></td>
-                <td>
-                    <button type="button" class="btn btn-icon btn-danger" onclick="removeRow(this)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" 
-                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" 
-                             stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                </td>
-            `;
+        <td>
+            <select class="form-select product-select" name="items[product_id][]" required>
+                <option value="">Select Product</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" class="form-control quantity-input" name="items[quantity][]" 
+                   min="1" step="1" required>
+        </td>
+        <td>
+            <input type="number" class="form-control price-input" name="items[price][]" 
+                   step="0.01" required readonly>
+        </td>
+        <td>₦<span class="row-total">0.00</span></td>
+        <td>
+            <button type="button" class="btn btn-icon btn-danger" onclick="removeRow(this)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" 
+                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" 
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </td>
+    `;
                 tbody.appendChild(row);
-
-                // Load products for the new row
                 loadProducts(row.querySelector('.product-select'));
+                calculateTotals();
             });
 
-            // Calculate totals
+            // Update removeRow function
+            window.removeRow = function(button) {
+                button.closest('tr').remove();
+                calculateTotals();
+            };
+
+            // Enhanced calculate totals function
             function calculateTotals() {
                 let subtotal = 0;
                 document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
@@ -560,15 +557,37 @@ include 'templates/header.php';
                     subtotal += total;
                 });
 
-                const tax = 0; // Calculate tax if needed
+                // Calculate tax (0% in this case)
+                const taxRate = 0;
+                const tax = subtotal * (taxRate / 100);
                 const total = subtotal + tax;
 
-                document.getElementById('subtotal').textContent = subtotal.toFixed(2);
-                document.getElementById('tax').textContent = tax.toFixed(2);
-                document.getElementById('total').textContent = total.toFixed(2);
+                // Update all total displays
+                document.querySelector('#subtotal').textContent = subtotal.toFixed(2);
+                document.querySelector('#tax').textContent = tax.toFixed(2);
+                document.querySelector('#total').textContent = total.toFixed(2);
+
+                // Update amount paid based on payment status
+                const paymentStatus = document.querySelector('select[name="payment_status"]').value;
+                const amountPaidInput = document.querySelector('input[name="amount_paid"]');
+
+                if (paymentStatus === 'paid') {
+                    amountPaidInput.value = total.toFixed(2);
+                    amountPaidInput.readOnly = true;
+                } else if (paymentStatus === 'pending') {
+                    amountPaidInput.value = '0.00';
+                    amountPaidInput.readOnly = true;
+                } else {
+                    amountPaidInput.readOnly = false;
+                    if (!amountPaidInput.value || parseFloat(amountPaidInput.value) > total) {
+                        amountPaidInput.value = total.toFixed(2);
+                    }
+                }
+
+                return total;
             }
 
-            // Replace the loadProducts function in your existing script with this:
+            // Load products function
             function loadProducts(select) {
                 fetch('actions/get_products.php')
                     .then(response => response.json())
@@ -577,7 +596,7 @@ include 'templates/header.php';
                         products.forEach(product => {
                             const option = document.createElement('option');
                             option.value = product.id;
-                            option.textContent = product.display_name;
+                            option.textContent = `${product.name} (${product.quantity} ${product.unit_type} available)`;
                             option.dataset.price = product.selling_price;
                             option.dataset.available = product.quantity;
                             option.dataset.unit = product.unit_type;
@@ -587,27 +606,34 @@ include 'templates/header.php';
                     .catch(error => console.error('Error loading products:', error));
             }
 
-            // Add quantity validation
+            // Enhanced real-time quantity input handler
             document.addEventListener('input', function(e) {
                 if (e.target.classList.contains('quantity-input')) {
                     const row = e.target.closest('tr');
                     const select = row.querySelector('.product-select');
                     const option = select.selectedOptions[0];
+                    const quantityInput = e.target;
+                    const priceInput = row.querySelector('.price-input');
 
                     if (option && option.dataset.available) {
                         const available = parseFloat(option.dataset.available);
-                        const quantity = parseFloat(e.target.value) || 0;
+                        let quantity = parseFloat(quantityInput.value) || 0;
 
                         if (quantity > available) {
                             alert(`Only ${available} ${option.dataset.unit} available in stock`);
-                            e.target.value = available;
+                            quantity = available;
+                            quantityInput.value = available;
                         }
+
+                        const price = parseFloat(priceInput.value) || 0;
+                        const total = quantity * price;
+                        row.querySelector('.row-total').textContent = total.toFixed(2);
+                        calculateTotals();
                     }
-                    calculateTotals();
                 }
             });
 
-            // Update product selection handler
+            // Enhanced product selection handler
             document.addEventListener('change', function(e) {
                 if (e.target.classList.contains('product-select')) {
                     const row = e.target.closest('tr');
@@ -619,19 +645,72 @@ include 'templates/header.php';
                         priceInput.value = option.dataset.price;
                         quantityInput.max = option.dataset.available;
                         quantityInput.placeholder = `Max: ${option.dataset.available} ${option.dataset.unit}`;
+                        quantityInput.value = '1'; // Set default quantity to 1
                         calculateTotals();
                     }
                 }
             });
 
-            // Form submission
-            newSaleForm.addEventListener('submit', function(e) {
-                if (!newSaleForm.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                newSaleForm.classList.add('was-validated');
+            // Payment status change handler
+            document.querySelector('select[name="payment_status"]').addEventListener('change', function() {
+                calculateTotals();
             });
+
+            // Amount paid input handler
+            document.querySelector('input[name="amount_paid"]').addEventListener('input', function(e) {
+                const total = calculateTotals();
+                let amount = parseFloat(e.target.value) || 0;
+
+                if (amount > total) {
+                    amount = total;
+                    e.target.value = amount.toFixed(2);
+                }
+            });
+
+            // Form submission handler with enhanced validation
+            newSaleForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const total = parseFloat(document.getElementById('total').textContent);
+                const amountPaid = parseFloat(document.querySelector('input[name="amount_paid"]').value);
+                const paymentStatus = document.querySelector('select[name="payment_status"]').value;
+
+                // Validation checks
+                if (document.querySelectorAll('#itemsTable tbody tr').length === 0) {
+                    alert('Please add at least one item to the sale');
+                    return;
+                }
+
+                if (paymentStatus === 'paid' && amountPaid !== total) {
+                    alert('Amount paid must equal total amount for paid status');
+                    return;
+                }
+
+                if (paymentStatus === 'partial' && amountPaid >= total) {
+                    alert('For partial payment, amount paid should be less than total amount');
+                    return;
+                }
+
+                if (paymentStatus === 'pending' && amountPaid > 0) {
+                    alert('Amount paid should be 0 for pending status');
+                    return;
+                }
+
+                // Add timestamp and user info
+                const formData = new FormData(this);
+                formData.append('created_at', CURRENT_TIME);
+                formData.append('created_by', CURRENT_USER);
+
+                // Submit the form if all validations pass
+                if (this.checkValidity()) {
+                    this.submit();
+                } else {
+                    this.classList.add('was-validated');
+                }
+            });
+
+            // Add initial row on load
+            document.getElementById('addItemRow').click();
         }
 
         // Print invoice function
