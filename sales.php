@@ -286,7 +286,8 @@ include 'templates/header.php';
                                         <td><?= date('Y-m-d H:i', strtotime($sale['created_at'])) ?></td>
                                         <td>
                                             <div class="btn-list flex-nowrap">
-                                                <a href="#" class="btn btn-icon btn-primary" onclick="printInvoice(<?= $sale['id'] ?>)">
+                                                <!-- Print button -->
+                                                <a href="#" class="btn btn-icon btn-primary" onclick="printInvoice(<?= $sale['id'] ?>)" title="Print Invoice">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                         <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
@@ -294,8 +295,21 @@ include 'templates/header.php';
                                                         <rect x="7" y="13" width="10" height="8" rx="2" />
                                                     </svg>
                                                 </a>
+
+                                                <!-- Save PDF button -->
+                                                <a href="#" class="btn btn-icon btn-info" onclick="saveSaleAsPDF(<?= $sale['id'] ?>)" title="Save as PDF">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                                        <path d="M12 17v-6" />
+                                                        <path d="M9.5 14.5l2.5 2.5l2.5 -2.5" />
+                                                    </svg>
+                                                </a>
+
+                                                <!-- Payment button (if not paid) -->
                                                 <?php if ($sale['payment_status'] !== 'paid'): ?>
-                                                    <a href="#" class="btn btn-icon btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" data-sale-id="<?= $sale['id'] ?>">
+                                                    <a href="#" class="btn btn-icon btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" data-sale-id="<?= $sale['id'] ?>" title="Add Payment">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                             <rect x="7" y="9" width="14" height="10" rx="2" />
@@ -306,6 +320,7 @@ include 'templates/header.php';
                                                 <?php endif; ?>
                                             </div>
                                         </td>
+
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -472,6 +487,27 @@ include 'templates/header.php';
 </div>
 
 <script>
+    // Add this function inside your existing <script> tag
+    // Add this function to your existing JavaScript code
+    function saveSaleAsPDF(saleId) {
+        // Create a form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'generate_sales_pdf.php';
+        form.target = '_blank'; // Open in new tab
+
+        // Add sale ID input
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'sale_id';
+        input.value = saleId;
+
+        // Add form to document and submit
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize constants
         const CURRENT_TIME = '2025-02-28 14:56:13';

@@ -641,9 +641,9 @@ include 'templates/header.php';
             });
 
             // Handle delete form submission
-            const deleteForm = document.getElementById('deleteProductForm');
+            const deleteForm = document.`getElementById('deleteProductForm');
             if (deleteForm) {
-                deleteForm.addEventListener('submit', function(e) {
+                del;eteForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
                     fetch(this.action, {
