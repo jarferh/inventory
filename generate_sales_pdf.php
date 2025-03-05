@@ -82,8 +82,9 @@ try {
     $pdf->SetFont('helvetica', 'B', 16);
 
     // Company Logo (if exists)
-    if (file_exists('assets/img/logo.png')) {
-        $pdf->Image('assets/img/logo.png', 15, 15, 30);
+    $logoPath = __DIR__ . '/assets/img/logo.png';
+    if (file_exists($logoPath)) {
+        $pdf->Image($logoPath, 15, 15, 30);
         $pdf->Cell(0, 30, '', 0, 1); // Space after logo
     }
 
