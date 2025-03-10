@@ -25,7 +25,7 @@ $CURRENT_USER = $_SESSION['username'] ?? 'Guest';
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title><?= isset($pageTitle) ? $pageTitle . ' - ' : '' ?>Samah Agrovet POS</title>
+    <title><?= isset($pageTitle) ? $pageTitle . ' - ' : '' ?>Sahama Agrovet POS</title>
 
     <!-- CSS files -->
     <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet"/>
@@ -119,7 +119,7 @@ $CURRENT_USER = $_SESSION['username'] ?? 'Guest';
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark">
                     <a href="index.php">
-                        <span>Samah Agrovet POS</span>
+                        <span>Sahama Agrovet POS</span>
                     </a>
                 </h1>
                 <div class="navbar-collapse collapse" id="sidebar-menu">

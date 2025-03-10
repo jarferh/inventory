@@ -332,7 +332,22 @@ include 'templates/header.php';
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label required">Product Code</label>
-                            <input type="text" class="form-control" name="code" required>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="code" id="product_code" required readonly>
+                                <span class="input-group-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-barcode" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                                        <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                                        <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                                        <rect x="5" y="11" width="1" height="2" />
+                                        <line x1="10" y1="11" x2="10" y2="13" />
+                                        <rect x="14" y="11" width="1" height="2" />
+                                        <line x1="19" y1="11" x2="19" y2="13" />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label required">Product Name</label>
@@ -444,8 +459,7 @@ include 'templates/header.php';
 </div>
 
 
-<!-- Add Product Modal -->
-<div class="modal modal-blur fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- <div class="modal modal-blur fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -455,10 +469,10 @@ include 'templates/header.php';
             <form action="actions/product_actions.php" method="post" class="needs-validation" novalidate>
                 <input type="hidden" name="action" value="add">
                 <!-- Rest of your product form fields -->
-            </form>
-        </div>
-    </div>
+</form>
 </div>
+</div>
+</div> -->
 <!-- Add Category Modal -->
 <div class="modal modal-blur fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -546,17 +560,136 @@ include 'templates/header.php';
 <!-- Initialize DataTable and handle modals -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const CURRENT_TIME = '2025-02-28 16:55:52';
+                // Add this at the beginning of your DOMContentLoaded event listener
+                const CURRENT_TIME = '2025-03-10 13:05:04';
+                const CURRENT_USER = 'jarferh';
+
+                // Handle Add Product Modal
+                const addProductModal = document.getElementById('addProductModal');
+                if (addProductModal) {
+                    // Generate product code when modal opens
+                    addProductModal.addEventListener('show.bs.modal', function(event) {
+                        const productCodeInput = document.getElementById('product_code');
+
+                        // Show loading state
+                        productCodeInput.value = 'Generating...';
+                        productCodeInput.disabled = true;
+
+                        // Generate new product code
+                        fetch('actions/generate_product_code.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success && data.code) {
+                                    productCodeInput.value = data.code;
+                                } else {
+                                    throw new Error(data.error || 'Failed to generate product code');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Fallback code generation
+                                const timestamp = Date.now();
+                                const fallbackCode = 'PRD' + timestamp.toString().slice(-6);
+                                productCodeInput.value = fallbackCode;
+                                // Show error message but don't prevent form submission
+                                const alertDiv = document.createElement('div');
+                                alertDiv.className = 'alert alert-warning alert-dismissible fade show mt-2';
+                                alertDiv.innerHTML = `
+                    Warning: Using fallback product code. The system will still work.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                                productCodeInput.parentNode.appendChild(alertDiv);
+                            })
+                            .finally(() => {
+                                productCodeInput.disabled = false;
+                            });
+                    });
+
+                    // Handle form submission
+                    const addProductForm = document.getElementById('addProductForm');
+                    if (addProductForm) {
+                        addProductForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+
+                            const formData = new FormData(this);
+                            formData.append('created_at', CURRENT_TIME);
+                            formData.append('created_by', CURRENT_USER);
+
+                            // Ensure we have a product code
+                            if (!formData.get('code')) {
+                                const timestamp = Date.now();
+                                formData.set('code', 'PRD' + timestamp.toString().slice(-6));
+                            }
+
+                            fetch('actions/product_actions.php', {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(response => response.text())
+                                .then(result => {
+                                    // Close modal
+                                    const modal = bootstrap.Modal.getInstance(addProductModal);
+                                    modal.hide();
+
+                                    // Show success message
+                                    const alertDiv = document.createElement('div');
+                                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                                    alertDiv.innerHTML = `
+                    Product added successfully
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                                    document.querySelector('.container-xl').insertBefore(alertDiv, document.querySelector('.card'));
+
+                                    // Reload page after brief delay
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1000);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('Error adding product: ' + error.message);
+                                });
+                        });
+                    }
+                }
+            });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add this at the top of your JavaScript code
+        const CURRENT_TIME = '2025-03-10 13:12:07';
         const CURRENT_USER = 'jarferh';
 
-        // Initialize DataTable
-        const table = new DataTable('.table', {
-            pageLength: 10,
-            responsive: true,
-            dom: 'Bfrtip',
-            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTable
+            const table = new DataTable('.table', {
+                pageLength: 10,
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+            });
 
+            // Log the current time and user for verification
+            console.log('System Time:', CURRENT_TIME);
+            console.log('Current User:', CURRENT_USER);
+
+            // Rest of your existing code...
+        });
+        // Add this to your existing DOMContentLoaded event listener
+        const addProductModal = document.getElementById('addProductModal');
+        if (addProductModal) {
+            addProductModal.addEventListener('show.bs.modal', function(event) {
+                // Generate new product code
+                fetch('actions/generate_product_code.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code) {
+                            document.getElementById('product_code').value = data.code;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        }
         // Handle Add Product Form
         const addProductForm = document.getElementById('addProductForm');
         if (addProductForm) {
@@ -641,9 +774,9 @@ include 'templates/header.php';
             });
 
             // Handle delete form submission
-            const deleteForm = document.`getElementById('deleteProductForm');
+            const deleteForm = document.getElementById('deleteProductForm');
             if (deleteForm) {
-                del;eteForm.addEventListener('submit', function(e) {
+                deleteForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
                     fetch(this.action, {
