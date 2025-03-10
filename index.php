@@ -430,14 +430,14 @@ include 'templates/header.php';
                     </div>
 
                     <!-- Sales Performance Chart -->
-                    <div class="card">
+                    <!-- <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Sales Performance</h3>
                         </div>
                         <div class="card-body">
                             <div id="salesChart" style="height: 220px"></div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

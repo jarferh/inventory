@@ -16,10 +16,10 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    
+
     try {
         $db = Database::getInstance()->getConnection();
-        
+
         // Get user with role information
         $stmt = $db->prepare("
             SELECT 
@@ -30,10 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             JOIN roles r ON u.role_id = r.id
             WHERE u.username = ? AND u.status = 'active'
         ");
-        
+
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($user && password_verify($password, $user['password'])) {
             // Log successful login
             $stmt = $db->prepare("
@@ -41,19 +41,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (?, 'login', 'User logged in successfully', ?)
             ");
             $stmt->execute([$user['id'], $_SERVER['REMOTE_ADDR']]);
-            
+
             // Set session variables
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['role'] = $user['role_name'];
+            // In your login processing file (e.g., login.php or auth.php)
+            $_SESSION['user_role'] = $user['role']; // Make sure your users table has a 'role' column
             $_SESSION['permissions'] = json_decode($user['permissions'], true);
-            
+
             header('Location: index.php');
             exit();
         } else {
             $error = 'Invalid username or password';
-            
+
             // Log failed login attempt
             $stmt = $db->prepare("
                 INSERT INTO activity_log (action, description, ip_address)
@@ -69,16 +71,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Login - Samah Agrovet POS</title>
-    
+
     <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <style>
         :root {
             --primary-color: #0061f2;
@@ -232,11 +235,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="login-container animate__animated animate__fadeIn">
         <div class="login-sidebar">
@@ -245,7 +256,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Sign in to manage your inventory, track sales, and access reports. Your business management journey starts here.</p>
             </div>
         </div>
-        
+
         <div class="login-form-container">
             <div class="login-header">
                 <img src="assets/img/logo.png" alt="Samah Agrovet" class="mb-4">
@@ -253,19 +264,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($error): ?>
-            <div class="alert alert-danger alert-dismissible" role="alert">
-                <div class="d-flex">
-                    <div class="me-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M12 9v2m0 4v.01"></path>
-                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
-                        </svg>
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <div class="d-flex">
+                        <div class="me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 9v2m0 4v.01"></path>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                            </svg>
+                        </div>
+                        <div><?= htmlspecialchars($error) ?></div>
                     </div>
-                    <div><?= htmlspecialchars($error) ?></div>
+                    <button class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
                 </div>
-                <button class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
-            </div>
             <?php endif; ?>
 
             <form method="post" action="" autocomplete="off">
@@ -283,7 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
                         <span class="input-group-text password-toggle">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <circle cx="12" cy="12" r="2" />
                                 <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
                             </svg>
@@ -314,44 +325,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Toggle password visibility
-        const togglePassword = document.querySelector('.password-toggle');
-        const passwordInput = document.querySelector('input[name="password"]');
-        
-        if (togglePassword && passwordInput) {
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                // Update icon
-                const icon = this.querySelector('.icon');
-                if (type === 'text') {
-                    icon.innerHTML = `
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            const togglePassword = document.querySelector('.password-toggle');
+            const passwordInput = document.querySelector('input[name="password"]');
+
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    // Update icon
+                    const icon = this.querySelector('.icon');
+                    if (type === 'text') {
+                        icon.innerHTML = `
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                         <line x1="3" y1="3" x2="21" y2="21" />
                         <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83" />
                         <path d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341" />
                     `;
-                } else {
-                    icon.innerHTML = `
+                    } else {
+                        icon.innerHTML = `
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                         <circle cx="12" cy="12" r="2" />
                         <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
                     `;
-                }
-            });
-        }
+                    }
+                });
+            }
 
-        // Automatically dismiss alerts after 5 seconds
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(alert => {
-            setTimeout(() => {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            }, 5000);
+            // Automatically dismiss alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
         });
-    });
     </script>
 </body>
+
 </html>
