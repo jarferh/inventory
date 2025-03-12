@@ -43,6 +43,12 @@ function getMenuByRole($role)
                 'permission' => 'manage_users'
             ],
             [
+                'title' => 'Profile',
+                'icon' => 'ti ti-user',
+                'link' => 'profile.php',
+                'permission' => 'profile'
+            ],
+            [
                 'title' => 'Settings',
                 'icon' => 'settings',
                 'link' => 'settings.php',
@@ -73,6 +79,12 @@ function getMenuByRole($role)
                 'icon' => 'report-analytics',
                 'link' => 'reports.php',
                 'permission' => 'view_reports'
+            ],
+            [
+                'title' => 'Profile',
+                'icon' => 'ti ti-user',
+                'link' => 'profile.php',
+                'permission' => 'profile'
             ]
         ],
         'cashier' => [
@@ -87,6 +99,12 @@ function getMenuByRole($role)
                 'icon' => 'shopping-cart',
                 'link' => 'sales.php',
                 'permission' => 'manage_sales'
+            ],
+            [
+                'title' => 'Profile',
+                'icon' => 'ti ti-user',
+                'link' => 'profile.php',
+                'permission' => 'profile'
             ]
         ]
     ];
