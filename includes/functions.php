@@ -54,6 +54,15 @@ function canViewProfit() {
     $allowedRoles = ['admin', 'manager'];
     return in_array($userRole, $allowedRoles) || in_array($roleId, [1, 2]); // 1 for admin, 2 for manager
 }
+function quickactions() {
+    // Get user's role from session
+    $userRole = $_SESSION['role'] ?? '';
+    $roleId = $_SESSION['role_id'] ?? 0;
+    
+    // Allow admin and manager roles
+    $allowedRoles = ['cashier'];
+    return in_array($userRole, $allowedRoles) || in_array($roleId, [1, 2]); // 1 for admin, 2 for manager
+}
 
 // Log system activity
 function logActivity($action, $description) {
