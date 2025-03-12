@@ -29,7 +29,7 @@ try {
         'total' => 0,
         'paid_amount' => 0
     ];
-    
+
     $todayProfit = ['total_profit' => 0];
     $lowStock = ['count' => 0];
     $recentSales = [];
@@ -95,8 +95,7 @@ try {
     ");
     $activityStmt->execute();
     $activities = $activityStmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     error_log($e->getMessage());
     // Initialize empty arrays if queries fail
     $todaySales = ['count' => 0, 'total' => 0, 'paid_amount' => 0];
@@ -128,7 +127,7 @@ include 'templates/header.php';
             </div>
         </div>
     </div>
-    
+
     <!-- Page body -->
     <div class="page-body">
         <div class="container-xl">
@@ -155,7 +154,7 @@ include 'templates/header.php';
                                 <div>Transactions</div>
                                 <div class="ms-auto">
                                     <span class="text-green d-inline-flex align-items-center lh-1">
-                                        <?= $todaySales['count'] ?> 
+                                        <?= $todaySales['count'] ?>
                                     </span>
                                 </div>
                             </div>
@@ -167,30 +166,30 @@ include 'templates/header.php';
                         </div>
                     </div>
                 </div>
-                
-                <div class="col-sm-6 col-lg-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="subheader">Today's Profit</div>
-                            </div>
-                            <div class="h1 mb-3">₦<?= number_format($todayProfit['total_profit'], 2) ?></div>
-                            <div class="d-flex mb-2">
-                                <div>Profit Margin</div>
-                                <div class="ms-auto">
-                                    <span class="text-green d-inline-flex align-items-center lh-1">
-                                        <?= number_format(($todayProfit['total_profit'] / max(1, $todaySales['total'])) * 100, 1) ?>%
-                                    </span>
+                <?php if (canViewProfit()): ?>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">Today's Profit</div>
                                 </div>
-                            </div>
-                            <div class="progress progress-sm">
-                                <div class="progress-bar bg-success" style="width: <?= ($todayProfit['total_profit'] / max(1, $todaySales['total'])) * 100 ?>%" role="progressbar">
+                                <div class="h1 mb-3">₦<?= number_format($todayProfit['total_profit'], 2) ?></div>
+                                <div class="d-flex mb-2">
+                                    <div>Profit Margin</div>
+                                    <div class="ms-auto">
+                                        <span class="text-green d-inline-flex align-items-center lh-1">
+                                            <?= number_format(($todayProfit['total_profit'] / max(1, $todaySales['total'])) * 100, 1) ?>%
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: <?= ($todayProfit['total_profit'] / max(1, $todaySales['total'])) * 100 ?>%" role="progressbar">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
+                <?php endif; ?>
                 <div class="col-sm-6 col-lg-3">
                     <div class="card">
                         <div class="card-body">
@@ -203,7 +202,7 @@ include 'templates/header.php';
                                 <div class="ms-auto">
                                     <span class="text-yellow d-inline-flex align-items-center lh-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                             <path d="M12 9v2m0 4v.01" />
                                             <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
                                         </svg>
@@ -217,7 +216,7 @@ include 'templates/header.php';
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-sm-6 col-lg-3">
                     <div class="card">
                         <div class="card-body">
@@ -273,31 +272,31 @@ include 'templates/header.php';
                                     </thead>
                                     <tbody>
                                         <?php foreach ($recentSales as $sale): ?>
-                                        <tr>
-                                            <td>
-                                                <a href="sale_details.php?id=<?= $sale['id'] ?>" class="text-reset">
-                                                    <?= htmlspecialchars($sale['invoice_number']) ?>
-                                                </a>
-                                            </td>
-                                            <td><?= htmlspecialchars($sale['customer_name'] ?? 'Walk-in Customer') ?></td>
-                                            <td>₦<?= number_format($sale['total_amount'], 2) ?></td>
-                                            <td>
-                                                <?php
-                                                $statusClass = match($sale['payment_status']) {
-                                                    'paid' => 'success',
-                                                    'partial' => 'warning',
-                                                    default => 'danger'
-                                                };
-                                                ?>
-                                                <span class="badge bg-<?= $statusClass ?>-lt">
-                                                    <?= ucfirst($sale['payment_status']) ?>
-                                                </span>
-                                            </td>
-                                            <td><?= htmlspecialchars($sale['created_by_user']) ?></td>
-                                            <td class="text-muted">
-                                                <?= date('H:i', strtotime($sale['created_at'])) ?>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td>
+                                                    <a href="sale_details.php?id=<?= $sale['id'] ?>" class="text-reset">
+                                                        <?= htmlspecialchars($sale['invoice_number']) ?>
+                                                    </a>
+                                                </td>
+                                                <td><?= htmlspecialchars($sale['customer_name'] ?? 'Walk-in Customer') ?></td>
+                                                <td>₦<?= number_format($sale['total_amount'], 2) ?></td>
+                                                <td>
+                                                    <?php
+                                                    $statusClass = match ($sale['payment_status']) {
+                                                        'paid' => 'success',
+                                                        'partial' => 'warning',
+                                                        default => 'danger'
+                                                    };
+                                                    ?>
+                                                    <span class="badge bg-<?= $statusClass ?>-lt">
+                                                        <?= ucfirst($sale['payment_status']) ?>
+                                                    </span>
+                                                </td>
+                                                <td><?= htmlspecialchars($sale['created_by_user']) ?></td>
+                                                <td class="text-muted">
+                                                    <?= date('H:i', strtotime($sale['created_at'])) ?>
+                                                </td>
+                                            </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
@@ -313,19 +312,19 @@ include 'templates/header.php';
                         <div class="card-body">
                             <div class="timeline">
                                 <?php foreach ($activities as $activity): ?>
-                                <div class="timeline-item">
-                                    <div class="timeline-badge bg-primary"></div>
-                                    <div class="timeline-content">
-                                        <div class="d-flex align-items-center justify-content-between mb-1">
-                                            <span class="fw-bold"><?= htmlspecialchars($activity['action']) ?></span>
-                                            <small class="text-muted"><?= date('H:i', strtotime($activity['created_at'])) ?></small>
+                                    <div class="timeline-item">
+                                        <div class="timeline-badge bg-primary"></div>
+                                        <div class="timeline-content">
+                                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                                <span class="fw-bold"><?= htmlspecialchars($activity['action']) ?></span>
+                                                <small class="text-muted"><?= date('H:i', strtotime($activity['created_at'])) ?></small>
+                                            </div>
+                                            <p class="text-muted mb-1"><?= htmlspecialchars($activity['description']) ?></p>
+                                            <span class="badge bg-primary-lt">
+                                                <?= htmlspecialchars($activity['username']) ?>
+                                            </span>
                                         </div>
-                                        <p class="text-muted mb-1"><?= htmlspecialchars($activity['description']) ?></p>
-                                        <span class="badge bg-primary-lt">
-                                            <?= htmlspecialchars($activity['username']) ?>
-                                        </span>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -353,7 +352,7 @@ include 'templates/header.php';
                                 </div>
                                 <div class="col-6">
                                     <a href="products.php?action=new" class="btn btn-success w-100 btn-icon">
-                                    <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                             <polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3"></polyline>
                                             <line x1="12" y1="12" x2="20" y2="7.5"></line>
@@ -446,126 +445,126 @@ include 'templates/header.php';
 
 <!-- Page specific scripts -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Update current time
-    function updateTime() {
-        const now = new Date('<?= $CURRENT_TIME ?>');
-        now.setSeconds(now.getSeconds() + 1);
-        document.getElementById('currentTimeDisplay').textContent = 
-            now.toISOString().slice(0, 19).replace('T', ' ');
-    }
-    setInterval(updateTime, 1000);
-
-    // Initialize sales chart
-    var options = {
-        series: [{
-            name: 'Sales',
-            data: [30, 40, 35, 50, 49, 60, 70]
-        }, {
-            name: 'Profit',
-            data: [12, 15, 14, 20, 19, 24, 28]
-        }],
-        chart: {
-            type: 'area',
-            height: 220,
-            toolbar: {
-                show: false,
-            },
-            stacked: false
-        },
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 2
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                opacityFrom: 0.6,
-                opacityTo: 0.1,
-            }
-        },
-        legend: {
-            position: 'bottom',
-            horizontalAlign: 'center'
-        },
-        xaxis: {
-            categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        },
-        yaxis: {
-            labels: {
-                formatter: function(value) {
-                    return '₦' + value.toFixed(0) + 'k';
-                }
-            }
-        },
-        tooltip: {
-            y: {
-                formatter: function(value) {
-                    return '₦' + value.toFixed(2) + 'k';
-                }
-            }
+    document.addEventListener("DOMContentLoaded", function() {
+        // Update current time
+        function updateTime() {
+            const now = new Date('<?= $CURRENT_TIME ?>');
+            now.setSeconds(now.getSeconds() + 1);
+            document.getElementById('currentTimeDisplay').textContent =
+                now.toISOString().slice(0, 19).replace('T', ' ');
         }
-    };
+        setInterval(updateTime, 1000);
 
-    var chart = new ApexCharts(document.querySelector("#salesChart"), options);
-    chart.render();
+        // Initialize sales chart
+        var options = {
+            series: [{
+                name: 'Sales',
+                data: [30, 40, 35, 50, 49, 60, 70]
+            }, {
+                name: 'Profit',
+                data: [12, 15, 14, 20, 19, 24, 28]
+            }],
+            chart: {
+                type: 'area',
+                height: 220,
+                toolbar: {
+                    show: false,
+                },
+                stacked: false
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    opacityFrom: 0.6,
+                    opacityTo: 0.1,
+                }
+            },
+            legend: {
+                position: 'bottom',
+                horizontalAlign: 'center'
+            },
+            xaxis: {
+                categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            },
+            yaxis: {
+                labels: {
+                    formatter: function(value) {
+                        return '₦' + value.toFixed(0) + 'k';
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function(value) {
+                        return '₦' + value.toFixed(2) + 'k';
+                    }
+                }
+            }
+        };
 
-    // Initialize DataTables
-    if ($.fn.DataTable) {
-        $('.datatable').DataTable({
-            pageLength: 5,
-            lengthChange: false,
-            searching: false,
-            ordering: true,
-            info: false,
-            responsive: true
-        });
-    }
-});
+        var chart = new ApexCharts(document.querySelector("#salesChart"), options);
+        chart.render();
+
+        // Initialize DataTables
+        if ($.fn.DataTable) {
+            $('.datatable').DataTable({
+                pageLength: 5,
+                lengthChange: false,
+                searching: false,
+                ordering: true,
+                info: false,
+                responsive: true
+            });
+        }
+    });
 </script>
 <!-- Core JS -->
 <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle mobile sidebar toggle
-    const navbarToggler = document.querySelector('.navbar-toggler');
-    const navbar = document.querySelector('.navbar-vertical');
-    const overlay = document.querySelector('.navbar-overlay');
-    
-    function toggleSidebar() {
-        navbar.classList.toggle('show');
-        overlay.classList.toggle('show');
-        document.body.classList.toggle('overflow-hidden');
-    }
-    
-    navbarToggler.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleSidebar();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle mobile sidebar toggle
+        const navbarToggler = document.querySelector('.navbar-toggler');
+        const navbar = document.querySelector('.navbar-vertical');
+        const overlay = document.querySelector('.navbar-overlay');
+
+        function toggleSidebar() {
+            navbar.classList.toggle('show');
+            overlay.classList.toggle('show');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        navbarToggler.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        // Close sidebar when clicking overlay
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Update current date and time
+        function updateDateTime() {
+            const now = new Date();
+            const formatted = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0') + ':' +
+                String(now.getSeconds()).padStart(2, '0');
+
+            document.getElementById('currentDateTime').textContent = formatted;
+        }
+
+        // Update time every second
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // Initial update
     });
-    
-    // Close sidebar when clicking overlay
-    overlay.addEventListener('click', toggleSidebar);
-    
-    // Update current date and time
-    function updateDateTime() {
-        const now = new Date();
-        const formatted = now.getFullYear() + '-' + 
-                         String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                         String(now.getDate()).padStart(2, '0') + ' ' + 
-                         String(now.getHours()).padStart(2, '0') + ':' + 
-                         String(now.getMinutes()).padStart(2, '0') + ':' + 
-                         String(now.getSeconds()).padStart(2, '0');
-        
-        document.getElementById('currentDateTime').textContent = formatted;
-    }
-    
-    // Update time every second
-    setInterval(updateDateTime, 1000);
-    updateDateTime(); // Initial update
-});
 </script>
 
 <?php include 'templates/footer.php'; ?>

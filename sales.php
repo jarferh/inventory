@@ -148,24 +148,26 @@ include 'templates/header.php';
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="subheader">Total Profit</div>
-                            </div>
-                            <div class="h1 mb-3">₦<?= number_format($totals['profit'], 2) ?></div>
-                            <div class="d-flex mb-2">
-                                <div>Profit Margin</div>
-                                <div class="ms-auto">
-                                    <span class="text-green d-inline-flex align-items-center lh-1">
-                                        <?= $totals['sales'] > 0 ? number_format(($totals['profit'] / $totals['sales']) * 100, 1) : '0' ?>%
-                                    </span>
+                <?php if (canViewProfit()): ?>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">Total Profit</div>
+                                </div>
+                                <div class="h1 mb-3">₦<?= number_format($totals['profit'], 2) ?></div>
+                                <div class="d-flex mb-2">
+                                    <div>Profit Margin</div>
+                                    <div class="ms-auto">
+                                        <span class="text-green d-inline-flex align-items-center lh-1">
+                                            <?= $totals['sales'] > 0 ? number_format(($totals['profit'] / $totals['sales']) * 100, 1) : '0' ?>%
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
                 <div class="col-sm-6 col-lg-3">
                     <div class="card">
                         <div class="card-body">
