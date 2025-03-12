@@ -8,6 +8,11 @@ require_once 'includes/Profile.php';
 $auth = new Auth();
 $auth->requireLogin();
 
+// In profile.php, add this near the top
+$uploadDir = 'uploads/avatars/';
+if (!file_exists($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
 // Set page variables
 $pageTitle = "Profile Management";
 $currentPage = "profile";
@@ -19,7 +24,7 @@ $profileData = $profile->getProfile();
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
+
     try {
         switch ($action) {
             case 'update_profile':

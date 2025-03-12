@@ -19,14 +19,14 @@ function deleteProduct(id) {
             url: 'ajax/delete_product.php',
             type: 'POST',
             data: { id: id },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     location.reload();
                 } else {
                     alert('Error deleting product');
                 }
             },
-            error: function() {
+            error: function () {
                 alert('Server error occurred');
             }
         });
@@ -39,7 +39,7 @@ function getProduct(id) {
         url: 'ajax/get_product.php',
         type: 'GET',
         data: { id: id },
-        success: function(product) {
+        success: function (product) {
             $('#editProductModal').find('input[name="id"]').val(product.id);
             $('#editProductModal').find('input[name="name"]').val(product.name);
             $('#editProductModal').find('input[name="code"]').val(product.code);
@@ -50,14 +50,14 @@ function getProduct(id) {
             $('#editProductModal').find('input[name="min_stock_level"]').val(product.min_stock_level);
             $('#editProductModal').modal('show');
         },
-        error: function() {
+        error: function () {
             alert('Error fetching product details');
         }
     });
 }
 
 // Document ready handlers
-$(document).ready(function() {
+$(document).ready(function () {
     // Initialize tooltips
     $('[data-bs-toggle="tooltip"]').tooltip();
 
@@ -70,4 +70,46 @@ $(document).ready(function() {
     }
 
     // Add any other initialization code here
+});
+
+// Add this to your existing JavaScript or create a new file profile.js
+document.addEventListener('DOMContentLoaded', function () {
+    // Password validation
+    const passwordForm = document.querySelector('form[action="update_password"]');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function (e) {
+            const newPass = this.querySelector('[name="new_password"]').value;
+            const confirmPass = this.querySelector('[name="confirm_password"]').value;
+
+            if (newPass !== confirmPass) {
+                e.preventDefault();
+                alert('New passwords do not match');
+                return false;
+            }
+
+            if (newPass.length < 8) {
+                e.preventDefault();
+                alert('Password must be at least 8 characters long');
+                return false;
+            }
+        });
+    }
+
+    // Avatar upload preview
+    const avatarInput = document.querySelector('input[name="avatar"]');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function (e) {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const avatar = document.querySelector('.avatar');
+                    if (avatar) {
+                        avatar.style.backgroundImage = `url(${e.target.result})`;
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 });
