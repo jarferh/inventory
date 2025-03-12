@@ -253,6 +253,7 @@ include 'templates/header.php';
                                     <th>Amount</th>
                                     <th>Profit</th>
                                     <th>Status</th>
+                                    <th>Amount Paid</th>
                                     <th>Created By</th>
                                     <th>Date</th>
                                     <th class="w-1">Actions</th>
@@ -270,18 +271,12 @@ include 'templates/header.php';
                                         <td><?= $sale['item_count'] ?? '0' ?></td>
                                         <td>₦<?= number_format($sale['total_amount'], 2) ?></td>
                                         <td>₦<?= number_format($sale['profit'], 2) ?></td>
-                                        <td>
-                                            <?php
-                                            $statusClass = match ($sale['payment_status']) {
-                                                'paid' => 'success',
-                                                'partial' => 'warning',
-                                                default => 'danger'
-                                            };
-                                            ?>
-                                            <span class="badge bg-<?= $statusClass ?>-lt">
+                                        <td class="payment-status">
+                                            <span class="badge bg-<?= $sale['payment_status'] === 'paid' ? 'success' : ($sale['payment_status'] === 'partial' ? 'warning' : 'danger') ?>-lt">
                                                 <?= ucfirst($sale['payment_status']) ?>
                                             </span>
                                         </td>
+                                        <td class="amount-paid">₦<?= number_format($sale['amount_paid'], 2) ?></td>
                                         <td><?= htmlspecialchars($sale['created_by_user']) ?></td>
                                         <td><?= date('Y-m-d H:i', strtotime($sale['created_at'])) ?></td>
                                         <td>
@@ -309,14 +304,19 @@ include 'templates/header.php';
 
                                                 <!-- Payment button (if not paid) -->
                                                 <?php if ($sale['payment_status'] !== 'paid'): ?>
-                                                    <a href="#" class="btn btn-icon btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" data-sale-id="<?= $sale['id'] ?>" title="Add Payment">
+                                                    <button type="button"
+                                                        class="btn btn-icon btn-success add-payment-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#addPaymentModal"
+                                                        data-sale-id="<?= $sale['id'] ?>"
+                                                        title="Add Payment">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                             <rect x="7" y="9" width="14" height="10" rx="2" />
                                                             <circle cx="14" cy="14" r="2" />
                                                             <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2" />
                                                         </svg>
-                                                    </a>
+                                                    </button>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -461,8 +461,24 @@ include 'templates/header.php';
                 <input type="hidden" name="sale_id" id="payment_sale_id">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Amount</label>
-                        <input type="number" class="form-control" name="amount" step="0.01" required>
+                        <label class="form-label">Total Amount</label>
+                        <input type="text" class="form-control" id="payment_total_amount" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount Paid So Far</label>
+                        <input type="text" class="form-control" id="payment_amount_paid" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Remaining Balance</label>
+                        <input type="text" class="form-control" id="payment_remaining" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Payment Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₦</span>
+                            <input type="number" class="form-control" name="amount" id="payment_amount"
+                                step="0.01" required min="0">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Payment Method</label>
@@ -485,8 +501,124 @@ include 'templates/header.php';
         </div>
     </div>
 </div>
-
 <script>
+    // Payment modal handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const addPaymentModal = document.getElementById('addPaymentModal');
+        if (addPaymentModal) {
+            addPaymentModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const saleId = button.getAttribute('data-sale-id');
+
+                // Reset form
+                document.getElementById('addPaymentForm').reset();
+                document.getElementById('payment_sale_id').value = saleId;
+
+                // Fetch sale details
+                fetch(`actions/get_sale_details.php?id=${saleId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(sale => {
+                        // Update modal fields
+                        document.getElementById('payment_total_amount').value = `₦${formatNumber(sale.total_amount)}`;
+                        document.getElementById('payment_amount_paid').value = `₦${formatNumber(sale.amount_paid)}`;
+                        document.getElementById('payment_remaining').value = `₦${formatNumber(sale.remaining_amount)}`;
+
+                        // Set max payment amount
+                        const paymentInput = document.getElementById('payment_amount');
+                        paymentInput.max = sale.remaining_amount;
+                        paymentInput.placeholder = `Max: ₦${formatNumber(sale.remaining_amount)}`;
+
+                        // Update modal title with invoice number
+                        const modalTitle = addPaymentModal.querySelector('.modal-title');
+                        modalTitle.textContent = `Add Payment - Invoice ${sale.invoice_number}`;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error loading sale details');
+                    });
+            });
+
+            // Payment form validation
+            const paymentForm = document.getElementById('addPaymentForm');
+            // Payment form submission handler
+            document.getElementById('addPaymentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const paymentAmount = parseFloat(document.getElementById('payment_amount').value);
+                const remainingAmount = parseFloat(document.getElementById('payment_remaining').value.replace('₦', '').replace(/,/g, ''));
+
+                // Validate payment amount
+                if (isNaN(paymentAmount) || paymentAmount <= 0) {
+                    alert('Please enter a valid payment amount');
+                    return;
+                }
+
+                if (paymentAmount > remainingAmount) {
+                    alert('Payment amount cannot exceed the remaining balance');
+                    return;
+                }
+
+                // Show loading state
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Processing...
+    `;
+
+                // Prepare form data
+                const formData = new FormData(this);
+                formData.append('ajax', '1');
+
+                // Send request
+                fetch('actions/sale_actions.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => Promise.reject(err));
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            alert(data.message);
+
+                            // Close modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('addPaymentModal'));
+                            modal.hide();
+
+                            // Reload page to update statistics
+                            window.location.reload();
+                        } else {
+                            throw new Error(data.error || 'Error processing payment');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert(error.error || error.message || 'Error processing payment');
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalText;
+                    });
+            });
+        }
+    });
+
+    // Helper function to format numbers
+    function formatNumber(number) {
+        return parseFloat(number).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
     // Add this function inside your existing <script> tag
     // Add this function to your existing JavaScript code
     function saveSaleAsPDF(saleId) {
