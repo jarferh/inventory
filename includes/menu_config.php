@@ -31,6 +31,12 @@ function getMenuByRole($role)
                 'permission' => 'manage_sales'
             ],
             [
+                'title' => 'Proforma Invoice',
+                'icon' => 'report-analytics',
+                'link' => 'proforma_invoice.php',
+                'permission' => 'proforma_invoice'
+            ],
+            [
                 'title' => 'Reports',
                 'icon' => 'report-analytics',
                 'link' => 'reports.php',
@@ -75,6 +81,12 @@ function getMenuByRole($role)
                 'permission' => 'manage_sales'
             ],
             [
+                'title' => 'Proforma Invoice',
+                'icon' => 'shopping-cart',
+                'link' => 'proforma_invoice.php',
+                'permission' => 'proforma_invoice'
+            ],
+            [
                 'title' => 'Reports',
                 'icon' => 'report-analytics',
                 'link' => 'reports.php',
@@ -99,6 +111,12 @@ function getMenuByRole($role)
                 'icon' => 'shopping-cart',
                 'link' => 'sales.php',
                 'permission' => 'manage_sales'
+            ],
+            [
+                'title' => 'Proforma Invoice',
+                'icon' => 'shopping-cart',
+                'link' => 'proforma_invoice.php',
+                'permission' => 'proforma_invoice'
             ],
             [
                 'title' => 'Profile',

@@ -589,5 +589,7 @@ include 'templates/header.php';
         updateDateTime(); // Initial update
     });
 </script>
+<!-- Core Tabler JS -->
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
 
 <?php include 'templates/footer.php'; ?>
