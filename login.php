@@ -2,12 +2,35 @@
 require_once 'config/config.php';
 require_once 'includes/Database.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Check if user is already logged in
-if (isset($_SESSION['user_id'])) {
+require_once 'includes/Auth.php';
+$auth = new Auth();
+
+// Redirect if already logged in
+if ($auth->isLoggedIn()) {
     header('Location: index.php');
     exit();
+}
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    if ($auth->login($username, $password)) {
+        // Get redirect URL from session or default to index.php
+        $redirect = $_SESSION['redirect_url'] ?? 'index.php';
+        unset($_SESSION['redirect_url']); // Clear stored URL
+
+        header("Location: $redirect");
+        exit();
+    } else {
+        $error = 'Invalid username or password';
+    }
 }
 
 $error = '';

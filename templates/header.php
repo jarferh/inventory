@@ -74,42 +74,44 @@ $CURRENT_USER = $_SESSION['username'] ?? 'Guest';
                 left: -18rem;
                 bottom: 0;
                 width: 18rem;
-                transition: left 0.3s ease;
-                z-index: 1050;
+                transition: all 0.3s ease-in-out;
+                z-index: 1030;
+                background: #1a2234;
             }
 
             .navbar-vertical.navbar-expand-lg.show {
                 left: 0;
             }
 
-            .navbar-vertical.navbar-expand-lg+.page {
-                margin-left: 0;
+            /* Remove overlay related styles */
+            /*.navbar-overlay {
+        display: none;
+    }*/
+
+            .navbar-collapse {
+                transition: all 0.3s ease-in-out;
             }
 
-            .navbar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.3);
-                z-index: 1040;
-                animation: fadeIn 0.2s ease;
+            .navbar-collapse:not(.show) {
                 display: none;
             }
 
-            .navbar-overlay.show {
+            .navbar-collapse.show {
                 display: block;
             }
-        }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
+            /* Ensure content remains clickable */
+            .page-wrapper {
+                position: relative;
+                z-index: 1;
             }
 
-            to {
-                opacity: 1;
+            /* Ensure mobile header stays above content */
+            header.navbar {
+                position: sticky;
+                top: 0;
+                z-index: 1020;
+                background: #1a2234;
             }
         }
 
@@ -151,57 +153,9 @@ $CURRENT_USER = $_SESSION['username'] ?? 'Guest';
             }
         }
     </style>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script> -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get the mobile menu elements
-            const navbarToggler = document.querySelector('.navbar-toggler');
-            const navbarMenu = document.querySelector('#navbar-menu');
-
-            // Function to close mobile menu
-            function closeMobileMenu() {
-                navbarMenu.classList.remove('show');
-                navbarToggler.setAttribute('aria-expanded', 'false');
-            }
-
-            // Toggle menu on button click
-            if (navbarToggler) {
-                navbarToggler.addEventListener('click', function() {
-                    navbarMenu.classList.toggle('show');
-                    const isExpanded = navbarMenu.classList.contains('show');
-                    navbarToggler.setAttribute('aria-expanded', isExpanded);
-                });
-            }
-
-            // Close menu when clicking menu items
-            const menuItems = document.querySelectorAll('#navbar-menu .nav-link');
-            menuItems.forEach(item => {
-                item.addEventListener('click', closeMobileMenu);
-            });
-
-            // Close menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const isClickInside = navbarMenu.contains(event.target) || navbarToggler.contains(event.target);
-                if (!isClickInside && navbarMenu.classList.contains('show')) {
-                    closeMobileMenu();
-                }
-            });
-
-            // Update datetime
-            function updateDateTime() {
-                const element = document.getElementById('currentDateTime');
-                if (element) {
-                    const now = new Date();
-                    element.textContent = now.toISOString().slice(0, 19).replace('T', ' ');
-                }
-            }
-            setInterval(updateDateTime, 1000);
-        });
-    </script>
 </head>
 
 <body>
-    <div class="navbar-overlay"></div>
     <div class="page">
         <!-- Desktop Sidebar - Only visible on lg screens and up -->
         <aside class="navbar navbar-vertical navbar-dark navbar-expand-lg d-none d-lg-flex">

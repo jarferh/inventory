@@ -4,12 +4,20 @@ require_once 'includes/Database.php';
 require_once 'includes/Auth.php';
 require_once 'includes/functions.php';
 
-// At the top of your index.php, after includes
-$currentPage = 'dashboard'; // This should match the menu item title in lowercase
-// Initialize Auth and check login
-// Initialize Auth
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $auth = new Auth();
-$auth->requireLogin();
+
+if (!$auth->isLoggedIn()) {
+    header('Location: login.php');
+    exit();
+}
+
+if (!$auth->requireLogin()) {
+    exit();
+}
 
 // Set page variables
 $pageTitle = "Dashboard";
@@ -548,48 +556,5 @@ include 'templates/header.php';
         }
     });
 </script>
-<!-- Core JS -->
-<script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle mobile sidebar toggle
-        const navbarToggler = document.querySelector('.navbar-toggler');
-        const navbar = document.querySelector('.navbar-vertical');
-        const overlay = document.querySelector('.navbar-overlay');
-
-        function toggleSidebar() {
-            navbar.classList.toggle('show');
-            overlay.classList.toggle('show');
-            document.body.classList.toggle('overflow-hidden');
-        }
-
-        navbarToggler.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
-        });
-
-        // Close sidebar when clicking overlay
-        overlay.addEventListener('click', toggleSidebar);
-
-        // Update current date and time
-        function updateDateTime() {
-            const now = new Date();
-            const formatted = now.getFullYear() + '-' +
-                String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0') + ' ' +
-                String(now.getHours()).padStart(2, '0') + ':' +
-                String(now.getMinutes()).padStart(2, '0') + ':' +
-                String(now.getSeconds()).padStart(2, '0');
-
-            document.getElementById('currentDateTime').textContent = formatted;
-        }
-
-        // Update time every second
-        setInterval(updateDateTime, 1000);
-        updateDateTime(); // Initial update
-    });
-</script>
-<!-- Core Tabler JS -->
-<script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
 
 <?php include 'templates/footer.php'; ?>
