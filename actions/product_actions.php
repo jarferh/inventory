@@ -158,6 +158,47 @@ try {
                     exit;
                 }
                 break;
+                case 'add_stock':
+                    if (empty($_POST['product_id']) || !isset($_POST['quantity'])) {
+                        throw new Exception("Product and quantity are required");
+                    }
+                    
+                    // Start transaction
+                    $db->beginTransaction();
+                    try {
+                        // Get current quantity
+                        $stmt = $db->prepare("SELECT quantity FROM products WHERE id = ?");
+                        $stmt->execute([$_POST['product_id']]);
+                        $current = $stmt->fetch(PDO::FETCH_ASSOC);
+                        
+                        if (!$current) {
+                            throw new Exception("Product not found");
+                        }
+                        
+                        // Update product quantity
+                        $newQuantity = $current['quantity'] + $_POST['quantity'];
+                        $stmt = $db->prepare("UPDATE products SET quantity = ?, updated_at = NOW() WHERE id = ?");
+                        $stmt->execute([$newQuantity, $_POST['product_id']]);
+                        
+                        // Log the stock addition
+                        $stmt = $db->prepare("
+                            INSERT INTO stock_history (product_id, quantity_added, notes, created_by, created_at)
+                            VALUES (?, ?, ?, ?, NOW())
+                        ");
+                        $stmt->execute([
+                            $_POST['product_id'],
+                            $_POST['quantity'],
+                            $_POST['notes'] ?? '',
+                            $_SESSION['user_id']
+                        ]);
+                        
+                        $db->commit();
+                        $_SESSION['success'] = "Stock added successfully";
+                    } catch (Exception $e) {
+                        $db->rollBack();
+                        throw $e;
+                    }
+                    break;
 
             default:
                 throw new Exception("Invalid action");
