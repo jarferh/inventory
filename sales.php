@@ -293,6 +293,16 @@ include 'templates/header.php';
                                                     </svg>
                                                 </a>
 
+                                                   <!-- Print Therma button -->
+                                                   <a href="#" class="btn btn-icon btn-primary" onclick="thermal(<?= $sale['id'] ?>)" title="Print Invoice">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
+                                                        <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
+                                                        <rect x="7" y="13" width="10" height="8" rx="2" />
+                                                    </svg>
+                                                </a>
+
                                                 <!-- Save PDF button -->
                                                 <a href="#" class="btn btn-icon btn-info" onclick="saveSaleAsPDF(<?= $sale['id'] ?>)" title="Save as PDF">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -617,6 +627,21 @@ include 'templates/header.php';
         }
     });
 
+    function printThermalReceipt(saleId) {
+    fetch(`print_invoice.php?id=${saleId}&thermal=true`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Receipt printed successfully');
+            } else {
+                showNotification('Printing failed: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Printing failed: ' + error, 'error');
+        });
+}
+
     // Helper function to format numbers
     function formatNumber(number) {
         return parseFloat(number).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -882,6 +907,8 @@ include 'templates/header.php';
             // Add initial row on load
             document.getElementById('addItemRow').click();
         }
+
+        
 
         // Print invoice function
         window.printInvoice = function(saleId) {

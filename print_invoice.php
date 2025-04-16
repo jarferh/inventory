@@ -66,6 +66,29 @@ if ($action === 'download') {
 } else {
     header('Content-Type: text/html');
 }
+
+// After getting sale details and before HTML output
+if (isset($_GET['thermal']) && $_GET['thermal'] === 'true') {
+    require_once 'vendor/autoload.php';
+    require_once 'includes/ThermalPrinter.php';
+    
+    try {
+        $printer = new ThermalPrinter();
+        $success = $printer->printReceipt($sale, $items, $settings);
+        
+        if ($success) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Printing failed']);
+        }
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
+    }
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
