@@ -103,8 +103,11 @@ include 'templates/header.php';
                 </div>
                 <div class="col-auto ms-auto d-print-none">
                     <div class="btn-list">
-                        <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#newSaleModal">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal"
+                            data-bs-target="#newSaleModal">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -212,11 +215,13 @@ include 'templates/header.php';
                     <form method="get" class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Start Date</label>
-                            <input type="date" class="form-control" name="start_date" value="<?= htmlspecialchars($startDate) ?>">
+                            <input type="date" class="form-control" name="start_date"
+                                value="<?= htmlspecialchars($startDate) ?>">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">End Date</label>
-                            <input type="date" class="form-control" name="end_date" value="<?= htmlspecialchars($endDate) ?>">
+                            <input type="date" class="form-control" name="end_date"
+                                value="<?= htmlspecialchars($endDate) ?>">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Payment Status</label>
@@ -230,7 +235,9 @@ include 'templates/header.php';
                         <div class="col-md-1">
                             <label class="form-label">&nbsp;</label>
                             <button type="submit" class="btn btn-primary w-100">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                     <circle cx="10" cy="10" r="7" />
                                     <line x1="21" y1="21" x2="15" y2="15" />
@@ -265,7 +272,8 @@ include 'templates/header.php';
                                 <?php foreach ($sales as $sale): ?>
                                     <tr>
                                         <td>
-                                            <a href="#" class="text-reset" data-bs-toggle="modal" data-bs-target="#viewSaleModal" data-sale-id="<?= $sale['id'] ?>">
+                                            <a href="#" class="text-reset" data-bs-toggle="modal"
+                                                data-bs-target="#viewSaleModal" data-sale-id="<?= $sale['id'] ?>">
                                                 <?= htmlspecialchars($sale['invoice_number']) ?>
                                             </a>
                                         </td>
@@ -274,7 +282,8 @@ include 'templates/header.php';
                                         <td>₦<?= number_format($sale['total_amount'], 2) ?></td>
                                         <td>₦<?= number_format($sale['profit'], 2) ?></td>
                                         <td class="payment-status">
-                                            <span class="badge bg-<?= $sale['payment_status'] === 'paid' ? 'success' : ($sale['payment_status'] === 'partial' ? 'warning' : 'danger') ?>-lt">
+                                            <span
+                                                class="badge bg-<?= $sale['payment_status'] === 'paid' ? 'success' : ($sale['payment_status'] === 'partial' ? 'warning' : 'danger') ?>-lt">
                                                 <?= ucfirst($sale['payment_status']) ?>
                                             </span>
                                         </td>
@@ -283,32 +292,55 @@ include 'templates/header.php';
                                         <td><?= date('Y-m-d H:i', strtotime($sale['created_at'])) ?></td>
                                         <td>
                                             <div class="btn-list flex-nowrap">
-                                                <!-- Print button -->
-                                                <a href="#" class="btn btn-icon btn-primary" onclick="printInvoice(<?= $sale['id'] ?>)" title="Print Invoice">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
-                                                        <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
-                                                        <rect x="7" y="13" width="10" height="8" rx="2" />
-                                                    </svg>
-                                                </a>
+                                                <!-- Print Options -->
+                                                <div class="btn-group" role="group" aria-label="Print options">
+                                                    <!-- Regular Invoice Print -->
+                                                    <a href="#" class="btn btn-icon btn-primary"
+                                                        onclick="printInvoice(<?= $sale['id'] ?>)"
+                                                        title="Print Regular Invoice">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="icon icon-tabler icon-tabler-printer" width="24"
+                                                            height="24" viewBox="0 0 24 24" stroke-width="2"
+                                                            stroke="currentColor" fill="none" stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path
+                                                                d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
+                                                            <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
+                                                            <rect x="7" y="13" width="10" height="8" rx="2" />
+                                                        </svg>
+                                                    </a>
 
-                                                   <!-- Print Therma button -->
-                                                   <a href="#" class="btn btn-icon btn-primary" onclick="thermal(<?= $sale['id'] ?>)" title="Print Invoice">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
-                                                        <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
-                                                        <rect x="7" y="13" width="10" height="8" rx="2" />
-                                                    </svg>
-                                                </a>
+                                                    <!-- Thermal Printer -->
+                                                    <a href="#" class="btn btn-icon btn-secondary"
+                                                        onclick="printThermalReceipt(<?= $sale['id'] ?>)"
+                                                        title="Print Thermal Receipt">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="icon icon-tabler icon-tabler-receipt" width="24"
+                                                            height="24" viewBox="0 0 24 24" stroke-width="2"
+                                                            stroke="currentColor" fill="none" stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path
+                                                                d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2" />
+                                                            <path
+                                                                d="M14 8h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3h-2.5m2 0v1.5m0 -9v1.5" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
 
                                                 <!-- Save PDF button -->
-                                                <a href="#" class="btn btn-icon btn-info" onclick="saveSaleAsPDF(<?= $sale['id'] ?>)" title="Save as PDF">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <a href="#" class="btn btn-icon btn-info"
+                                                    onclick="saveSaleAsPDF(<?= $sale['id'] ?>)" title="Save as PDF">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="icon icon-tabler icon-tabler-file-download" width="24"
+                                                        height="24" viewBox="0 0 24 24" stroke-width="2"
+                                                        stroke="currentColor" fill="none" stroke-linecap="round"
+                                                        stroke-linejoin="round">
                                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                         <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                                        <path
+                                                            d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
                                                         <path d="M12 17v-6" />
                                                         <path d="M9.5 14.5l2.5 2.5l2.5 -2.5" />
                                                     </svg>
@@ -316,17 +348,18 @@ include 'templates/header.php';
 
                                                 <!-- Payment button (if not paid) -->
                                                 <?php if ($sale['payment_status'] !== 'paid'): ?>
-                                                    <button type="button"
-                                                        class="btn btn-icon btn-success add-payment-btn"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#addPaymentModal"
-                                                        data-sale-id="<?= $sale['id'] ?>"
-                                                        title="Add Payment">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <button type="button" class="btn btn-icon btn-success add-payment-btn"
+                                                        data-bs-toggle="modal" data-bs-target="#addPaymentModal"
+                                                        data-sale-id="<?= $sale['id'] ?>" title="Add Payment">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="icon icon-tabler icon-tabler-cash" width="24" height="24"
+                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                             <rect x="7" y="9" width="14" height="10" rx="2" />
                                                             <circle cx="14" cy="14" r="2" />
-                                                            <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2" />
+                                                            <path
+                                                                d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2" />
                                                         </svg>
                                                     </button>
                                                 <?php endif; ?>
@@ -488,8 +521,8 @@ include 'templates/header.php';
                         <label class="form-label required">Payment Amount</label>
                         <div class="input-group">
                             <span class="input-group-text">₦</span>
-                            <input type="number" class="form-control" name="amount" id="payment_amount"
-                                step="0.01" required min="0">
+                            <input type="number" class="form-control" name="amount" id="payment_amount" step="0.01"
+                                required min="0">
                         </div>
                     </div>
                     <div class="mb-3">
@@ -515,10 +548,10 @@ include 'templates/header.php';
 </div>
 <script>
     // Payment modal handler
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const addPaymentModal = document.getElementById('addPaymentModal');
         if (addPaymentModal) {
-            addPaymentModal.addEventListener('show.bs.modal', function(event) {
+            addPaymentModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const saleId = button.getAttribute('data-sale-id');
 
@@ -558,7 +591,7 @@ include 'templates/header.php';
             // Payment form validation
             const paymentForm = document.getElementById('addPaymentForm');
             // Payment form submission handler
-            document.getElementById('addPaymentForm').addEventListener('submit', function(e) {
+            document.getElementById('addPaymentForm').addEventListener('submit', function (e) {
                 e.preventDefault();
 
                 const paymentAmount = parseFloat(document.getElementById('payment_amount').value);
@@ -590,9 +623,9 @@ include 'templates/header.php';
 
                 // Send request
                 fetch('actions/sale_actions.php', {
-                        method: 'POST',
-                        body: formData
-                    })
+                    method: 'POST',
+                    body: formData
+                })
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(err => Promise.reject(err));
@@ -628,19 +661,19 @@ include 'templates/header.php';
     });
 
     function printThermalReceipt(saleId) {
-    fetch(`print_invoice.php?id=${saleId}&thermal=true`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Receipt printed successfully');
-            } else {
-                showNotification('Printing failed: ' + (data.error || 'Unknown error'), 'error');
-            }
-        })
-        .catch(error => {
-            showNotification('Printing failed: ' + error, 'error');
-        });
-}
+        fetch(`print_invoice.php?id=${saleId}&thermal=true`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Receipt printed successfully');
+                } else {
+                    showNotification('Printing failed: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Printing failed: ' + error, 'error');
+            });
+    }
 
     // Helper function to format numbers
     function formatNumber(number) {
@@ -667,7 +700,7 @@ include 'templates/header.php';
         form.submit();
         document.body.removeChild(form);
     }
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Initialize constants
         const CURRENT_TIME = '2025-02-28 14:56:13';
         const CURRENT_USER = 'jarferh';
@@ -684,7 +717,7 @@ include 'templates/header.php';
         // Handle View Sale Modal
         const viewSaleModal = document.getElementById('viewSaleModal');
         if (viewSaleModal) {
-            viewSaleModal.addEventListener('show.bs.modal', function(event) {
+            viewSaleModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const saleId = button.getAttribute('data-sale-id');
                 fetch(`actions/get_sale_details.php?id=${saleId}`)
@@ -700,7 +733,7 @@ include 'templates/header.php';
         if (newSaleForm) {
             // Add item row function
             // Add item row function
-            document.getElementById('addItemRow').addEventListener('click', function() {
+            document.getElementById('addItemRow').addEventListener('click', function () {
                 const tbody = document.querySelector('#itemsTable tbody');
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -736,7 +769,7 @@ include 'templates/header.php';
             });
 
             // Update removeRow function
-            window.removeRow = function(button) {
+            window.removeRow = function (button) {
                 button.closest('tr').remove();
                 calculateTotals();
             };
@@ -802,7 +835,7 @@ include 'templates/header.php';
             }
 
             // Enhanced real-time quantity input handler
-            document.addEventListener('input', function(e) {
+            document.addEventListener('input', function (e) {
                 if (e.target.classList.contains('quantity-input')) {
                     const row = e.target.closest('tr');
                     const select = row.querySelector('.product-select');
@@ -829,7 +862,7 @@ include 'templates/header.php';
             });
 
             // Enhanced product selection handler
-            document.addEventListener('change', function(e) {
+            document.addEventListener('change', function (e) {
                 if (e.target.classList.contains('product-select')) {
                     const row = e.target.closest('tr');
                     const option = e.target.selectedOptions[0];
@@ -847,12 +880,12 @@ include 'templates/header.php';
             });
 
             // Payment status change handler
-            document.querySelector('select[name="payment_status"]').addEventListener('change', function() {
+            document.querySelector('select[name="payment_status"]').addEventListener('change', function () {
                 calculateTotals();
             });
 
             // Amount paid input handler
-            document.querySelector('input[name="amount_paid"]').addEventListener('input', function(e) {
+            document.querySelector('input[name="amount_paid"]').addEventListener('input', function (e) {
                 const total = calculateTotals();
                 let amount = parseFloat(e.target.value) || 0;
 
@@ -863,7 +896,7 @@ include 'templates/header.php';
             });
 
             // Form submission handler with enhanced validation
-            newSaleForm.addEventListener('submit', function(e) {
+            newSaleForm.addEventListener('submit', function (e) {
                 e.preventDefault();
 
                 const total = parseFloat(document.getElementById('total').textContent);
@@ -908,10 +941,10 @@ include 'templates/header.php';
             document.getElementById('addItemRow').click();
         }
 
-        
+
 
         // Print invoice function
-        window.printInvoice = function(saleId) {
+        window.printInvoice = function (saleId) {
             window.open(`print_invoice.php?id=${saleId}`, '_blank');
         };
     });

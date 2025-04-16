@@ -72,22 +72,28 @@ if (isset($_GET['thermal']) && $_GET['thermal'] === 'true') {
     require_once 'vendor/autoload.php';
     require_once 'includes/ThermalPrinter.php';
     
+    header('Content-Type: application/json');
+    
     try {
-        $printer = new ThermalPrinter();
+        // Load printer configuration
+        $printerConfig = require 'config/printer_config.php';
+        
+        // Initialize printer
+        $printer = new ThermalPrinter($printerConfig);
+        
+        // Print receipt
         $success = $printer->printReceipt($sale, $items, $settings);
         
-        if ($success) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Printing failed']);
-        }
-        exit;
+        echo json_encode(['success' => true]);
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        exit;
+        http_response_code(500);
+        echo json_encode([
+            'success' => false, 
+            'error' => $e->getMessage()
+        ]);
     }
+    exit;
 }
-
 
 ?>
 <!DOCTYPE html>
