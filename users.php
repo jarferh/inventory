@@ -29,9 +29,11 @@ try {
         SELECT 
             u.*,
             COUNT(s.id) as total_sales,
-            MAX(s.created_at) as last_activity
+            MAX(s.created_at) as last_activity,
+            r.id as role_id
         FROM users u
         LEFT JOIN sales s ON u.id = s.created_by
+        LEFT JOIN roles r ON u.role_id = r.id
         GROUP BY u.id
         ORDER BY u.created_at DESC
     ";

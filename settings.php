@@ -25,12 +25,31 @@ unset($_SESSION['success'], $_SESSION['error']);
 
 // Get system settings
 try {
-    $stmt = $db->query("SELECT * FROM settings WHERE is_active = 1");
-    $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $stmt = $db->query("SELECT setting_key, setting_value FROM settings WHERE is_active = 1");
+    $settings = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
 } catch (PDOException $e) {
     error_log($e->getMessage());
     $settings = [];
 }
+
+// Set default values if settings are empty
+$defaultSettings = [
+    'company_name' => 'My Company',
+    'company_address' => '',
+    'contact_email' => '',
+    'contact_phone' => '',
+    'currency_symbol' => '₦',
+    'low_stock_threshold' => '10',
+    'tax_rate' => '0',
+    'invoice_prefix' => 'INV',
+    'last_backup' => null
+];
+
+// Merge default settings with database settings
+$settings = array_merge($defaultSettings, $settings);
 
 include 'templates/header.php';
 ?>
@@ -104,32 +123,42 @@ include 'templates/header.php';
                                 <input type="hidden" name="action" value="update_system">
                                 <div class="mb-3">
                                     <label class="form-label">Company Name</label>
-                                    <input type="text" class="form-control" name="company_name" 
-                                           value="<?= htmlspecialchars($settings['company_name'] ?? '') ?>">
+                                    <input type="text" class="form-control" name="settings[company_name]" 
+                                           value="<?= htmlspecialchars($settings['company_name']) ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Company Address</label>
-                                    <textarea class="form-control" name="company_address" rows="2"><?= htmlspecialchars($settings['company_address'] ?? '') ?></textarea>
+                                    <textarea class="form-control" name="settings[company_address]" rows="2"><?= htmlspecialchars($settings['company_address']) ?></textarea>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Contact Email</label>
-                                    <input type="email" class="form-control" name="contact_email" 
-                                           value="<?= htmlspecialchars($settings['contact_email'] ?? '') ?>">
+                                    <input type="email" class="form-control" name="settings[contact_email]" 
+                                           value="<?= htmlspecialchars($settings['contact_email']) ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Contact Phone</label>
-                                    <input type="text" class="form-control" name="contact_phone" 
-                                           value="<?= htmlspecialchars($settings['contact_phone'] ?? '') ?>">
+                                    <input type="text" class="form-control" name="settings[contact_phone]" 
+                                           value="<?= htmlspecialchars($settings['contact_phone']) ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Currency Symbol</label>
-                                    <input type="text" class="form-control" name="currency_symbol" 
-                                           value="<?= htmlspecialchars($settings['currency_symbol'] ?? '₦') ?>">
+                                    <input type="text" class="form-control" name="settings[currency_symbol]" 
+                                           value="<?= htmlspecialchars($settings['currency_symbol']) ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Low Stock Alert Threshold</label>
-                                    <input type="number" class="form-control" name="low_stock_threshold" 
-                                           value="<?= htmlspecialchars($settings['low_stock_threshold'] ?? '10') ?>">
+                                    <input type="number" class="form-control" name="settings[low_stock_threshold]" 
+                                           value="<?= htmlspecialchars($settings['low_stock_threshold']) ?>" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tax Rate (%)</label>
+                                    <input type="number" step="0.01" class="form-control" name="settings[tax_rate]" 
+                                           value="<?= htmlspecialchars($settings['tax_rate']) ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Invoice Prefix</label>
+                                    <input type="text" class="form-control" name="settings[invoice_prefix]" 
+                                           value="<?= htmlspecialchars($settings['invoice_prefix']) ?>" required>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Save System Settings</button>
                             </form>

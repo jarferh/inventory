@@ -31,6 +31,10 @@ try {
     // Get database connection
     $db = Database::getInstance()->getConnection();
 
+    // Get tax rate from settings
+    $taxRateStmt = $db->query("SELECT setting_value FROM settings WHERE setting_key = 'tax_rate' AND is_active = 1");
+    $taxRate = $taxRateStmt->fetchColumn() ?: 0; // Default to 0 if not set
+
     // Check if sales table exists
     $stmt = $db->query("SHOW TABLES LIKE 'sales'");
     if ($stmt->rowCount() == 0) {
@@ -434,8 +438,8 @@ include 'templates/header.php';
                                         <td class="fw-bold">₦<span id="subtotal">0.00</span></td>
                                         <td></td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="3" class="text-end fw-bold">Tax (0%):</td>
+                                    <tr></tr></tr>
+                                        <td colspan="3" class="text-end fw-bold">Tax (<?= $taxRate ?>%):</td>
                                         <td class="fw-bold">₦<span id="tax">0.00</span></td>
                                         <td></td>
                                     </tr>
@@ -547,6 +551,9 @@ include 'templates/header.php';
     </div>
 </div>
 <script>
+    // Add tax rate as a global constant
+    const TAX_RATE = <?= $taxRate ?>;
+    
     // Payment modal handler
     document.addEventListener('DOMContentLoaded', function () {
         const addPaymentModal = document.getElementById('addPaymentModal');
@@ -785,9 +792,8 @@ include 'templates/header.php';
                     subtotal += total;
                 });
 
-                // Calculate tax (0% in this case)
-                const taxRate = 0;
-                const tax = subtotal * (taxRate / 100);
+                // Calculate tax using rate from database
+                const tax = subtotal * (TAX_RATE / 100);
                 const total = subtotal + tax;
 
                 // Update all total displays
