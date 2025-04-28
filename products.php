@@ -115,6 +115,19 @@ include 'templates/header.php';
                             </svg>
                             Add Stock
                         </a>
+                        <!-- Replace Add Stock button with Bulk Stock Update link -->
+                        <a href="bulk_stock.php" class="btn btn-success d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9l8 -4.5" />
+                                <path d="M12 12l8 -4.5" />
+                                <path d="M12 12v9" />
+                                <path d="M12 12l-8 -4.5" />
+                            </svg>
+                            Bulk Stock Update
+                        </a>
                     </div>
                 </div>
             </div>
@@ -412,7 +425,7 @@ include 'templates/header.php';
                                     <?php
                                     $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
                                     foreach ($categories as $category):
-                                        ?>
+                                    ?>
                                         <option value="<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -628,10 +641,10 @@ include 'templates/header.php';
                         <select class="form-select" name="product_id" required>
                             <option value="">Select a product...</option>
                             <?php foreach ($products as $product): ?>
-                                <option value="<?= $product['id'] ?>" 
-                                        data-current-stock="<?= $product['quantity'] ?>"
-                                        data-unit="<?= htmlspecialchars($product['unit_type']) ?>">
-                                    <?= htmlspecialchars($product['name']) ?> 
+                                <option value="<?= $product['id'] ?>"
+                                    data-current-stock="<?= $product['quantity'] ?>"
+                                    data-unit="<?= htmlspecialchars($product['unit_type']) ?>">
+                                    <?= htmlspecialchars($product['name']) ?>
                                     (Current: <?= $product['quantity'] ?> <?= $product['unit_type'] ?>)
                                 </option>
                             <?php endforeach; ?>
@@ -660,21 +673,21 @@ include 'templates/header.php';
 <!-- Initialize DataTable and handle modals -->
 <script>
     // Add this to your existing script section
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle unit type display in Add Stock modal
-    const stockModal = document.getElementById('addStockModal');
-    if (stockModal) {
-        const productSelect = stockModal.querySelector('select[name="product_id"]');
-        const unitSpan = stockModal.querySelector('.unit-type');
-        
-        productSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const unit = selectedOption.getAttribute('data-unit');
-            unitSpan.textContent = unit || 'units';
-        });
-    }
-});
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle unit type display in Add Stock modal
+        const stockModal = document.getElementById('addStockModal');
+        if (stockModal) {
+            const productSelect = stockModal.querySelector('select[name="product_id"]');
+            const unitSpan = stockModal.querySelector('.unit-type');
+
+            productSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const unit = selectedOption.getAttribute('data-unit');
+                unitSpan.textContent = unit || 'units';
+            });
+        }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
         // Add this at the beginning of your DOMContentLoaded event listener
         const CURRENT_TIME = '2025-03-10 13:05:04';
         const CURRENT_USER = 'jarferh';
@@ -683,7 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const addProductModal = document.getElementById('addProductModal');
         if (addProductModal) {
             // Generate product code when modal opens
-            addProductModal.addEventListener('show.bs.modal', function (event) {
+            addProductModal.addEventListener('show.bs.modal', function(event) {
                 const productCodeInput = document.getElementById('product_code');
 
                 // Show loading state
@@ -723,7 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle form submission
             const addProductForm = document.getElementById('addProductForm');
             if (addProductForm) {
-                addProductForm.addEventListener('submit', function (e) {
+                addProductForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
                     const formData = new FormData(this);
@@ -737,9 +750,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     fetch('actions/product_actions.php', {
-                        method: 'POST',
-                        body: formData
-                    })
+                            method: 'POST',
+                            body: formData
+                        })
                         .then(response => response.text())
                         .then(result => {
                             // Close modal
@@ -770,12 +783,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         // Add this at the top of your JavaScript code
         const CURRENT_TIME = '2025-03-10 13:12:07';
         const CURRENT_USER = 'jarferh';
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // Initialize DataTable
             const table = new DataTable('.table', {
                 pageLength: 10,
@@ -793,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add this to your existing DOMContentLoaded event listener
         const addProductModal = document.getElementById('addProductModal');
         if (addProductModal) {
-            addProductModal.addEventListener('show.bs.modal', function (event) {
+            addProductModal.addEventListener('show.bs.modal', function(event) {
                 // Generate new product code
                 fetch('actions/generate_product_code.php')
                     .then(response => response.json())
@@ -808,16 +821,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle Add Product Form
         const addProductForm = document.getElementById('addProductForm');
         if (addProductForm) {
-            addProductForm.addEventListener('submit', function (e) {
+            addProductForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
                 formData.append('created_at', CURRENT_TIME);
                 formData.append('created_by', CURRENT_USER);
 
                 fetch('actions/product_actions.php', {
-                    method: 'POST',
-                    body: formData
-                })
+                        method: 'POST',
+                        body: formData
+                    })
                     .then(response => response.text())
                     .then(result => {
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
@@ -834,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle Edit Product Modal
         const editProductModal = document.getElementById('editProductModal');
         if (editProductModal) {
-            editProductModal.addEventListener('show.bs.modal', function (event) {
+            editProductModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const product = JSON.parse(button.getAttribute('data-product'));
 
@@ -855,16 +868,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Handle Edit Form Submit
             const editForm = editProductModal.querySelector('form');
-            editForm.addEventListener('submit', function (e) {
+            editForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
                 formData.append('updated_at', CURRENT_TIME);
                 formData.append('updated_by', CURRENT_USER);
 
                 fetch('actions/product_actions.php', {
-                    method: 'POST',
-                    body: formData
-                })
+                        method: 'POST',
+                        body: formData
+                    })
                     .then(response => response.text())
                     .then(result => {
                         const modal = bootstrap.Modal.getInstance(editProductModal);
@@ -882,7 +895,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const deleteProductModal = document.getElementById('deleteProductModal');
         if (deleteProductModal) {
             // Set product ID when delete modal opens
-            deleteProductModal.addEventListener('show.bs.modal', function (event) {
+            deleteProductModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const productId = button.getAttribute('data-product-id');
                 document.getElementById('delete_product_id').value = productId;
@@ -891,13 +904,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle delete form submission
             const deleteForm = document.getElementById('deleteProductForm');
             if (deleteForm) {
-                deleteForm.addEventListener('submit', function (e) {
+                deleteForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
                     fetch(this.action, {
-                        method: 'POST',
-                        body: new FormData(this)
-                    })
+                            method: 'POST',
+                            body: new FormData(this)
+                        })
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error('Network response was not ok');
@@ -930,11 +943,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         // Form validation
         const forms = document.querySelectorAll('.needs-validation');
         Array.from(forms).forEach(form => {
-            form.addEventListener('submit', function (event) {
+            form.addEventListener('submit', function(event) {
                 if (!form.checkValidity()) {
                     event.preventDefault();
                     event.stopPropagation();
@@ -949,12 +962,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Display session messages
         <?php if (isset($_SESSION['error'])): ?>
             alert('Error: <?= addslashes($_SESSION['error']) ?>');
-            <?php unset($_SESSION['error']);
+        <?php unset($_SESSION['error']);
         endif; ?>
 
         <?php if (isset($_SESSION['success'])): ?>
             alert('Success: <?= addslashes($_SESSION['success']) ?>');
-            <?php unset($_SESSION['success']);
+        <?php unset($_SESSION['success']);
         endif; ?>
     });
 </script>

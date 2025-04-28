@@ -169,36 +169,106 @@ try {
                         // Get current quantity
                         $stmt = $db->prepare("SELECT quantity FROM products WHERE id = ?");
                         $stmt->execute([$_POST['product_id']]);
-                        $current = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $currentStock = $stmt->fetchColumn();
                         
-                        if (!$current) {
+                        if ($currentStock === false) {
                             throw new Exception("Product not found");
                         }
                         
-                        // Update product quantity
-                        $newQuantity = $current['quantity'] + $_POST['quantity'];
-                        $stmt = $db->prepare("UPDATE products SET quantity = ?, updated_at = NOW() WHERE id = ?");
-                        $stmt->execute([$newQuantity, $_POST['product_id']]);
+                        // Calculate new stock level
+                        $quantity = floatval($_POST['quantity']);
+                        $newStock = $currentStock + $quantity;
                         
-                        // Log the stock addition
+                        // Update product quantity
+                        $stmt = $db->prepare("UPDATE products SET quantity = ?, updated_at = NOW() WHERE id = ?");
+                        $stmt->execute([$newStock, $_POST['product_id']]);
+                        
+                        // Log stock history
                         $stmt = $db->prepare("
-                            INSERT INTO stock_history (product_id, quantity_added, notes, created_by, created_at)
-                            VALUES (?, ?, ?, ?, NOW())
+                            INSERT INTO stock_history (
+                                product_id,
+                                previous_quantity,
+                                new_quantity,
+                                change_quantity,
+                                change_type,
+                                notes,
+                                created_by,
+                                created_at
+                            ) VALUES (?, ?, ?, ?, 'single_update', ?, ?, NOW())
                         ");
+                        
                         $stmt->execute([
                             $_POST['product_id'],
-                            $_POST['quantity'],
-                            $_POST['notes'] ?? '',
+                            $currentStock,
+                            $newStock,
+                            $quantity,
+                            $_POST['notes'] ?? 'Stock update',
                             $_SESSION['user_id']
                         ]);
                         
                         $db->commit();
-                        $_SESSION['success'] = "Stock added successfully";
+                        $_SESSION['success'] = "Stock updated successfully";
                     } catch (Exception $e) {
                         $db->rollBack();
                         throw $e;
                     }
                     break;
+            case 'bulk_stock_update':
+                if (empty($_POST['products'])) {
+                    throw new Exception("No products selected for update");
+                }
+
+                // Create stock_history table if it doesn't exist
+                $createTableSQL = file_get_contents(__DIR__ . '/../database/create_stock_history.sql');
+                $db->exec($createTableSQL);
+
+                $db->beginTransaction();
+                try {
+                    foreach ($_POST['products'] as $productData) {
+                        if (empty($productData['quantity'])) {
+                            continue; // Skip if no quantity provided
+                        }
+
+                        // Get current quantity
+                        $stmt = $db->prepare("SELECT quantity FROM products WHERE id = ?");
+                        $stmt->execute([$productData['id']]);
+                        $currentQty = $stmt->fetchColumn();
+
+                        // Calculate new quantity (adding to existing)
+                        $newQty = $currentQty + floatval($productData['quantity']);
+
+                        // Update product quantity
+                        $stmt = $db->prepare("UPDATE products SET quantity = ?, updated_at = NOW() WHERE id = ?");
+                        $stmt->execute([$newQty, $productData['id']]);
+
+                        // Log stock update with proper fields
+                        $stmt = $db->prepare("
+                            INSERT INTO stock_history (
+                                product_id, 
+                                quantity_change,
+                                quantity_before,
+                                quantity_after,
+                                notes, 
+                                created_by
+                            ) VALUES (?, ?, ?, ?, ?, ?)
+                        ");
+                        $stmt->execute([
+                            $productData['id'],
+                            $productData['quantity'],
+                            $currentQty,
+                            $newQty,
+                            $productData['notes'] ?? 'Bulk stock update',
+                            $_SESSION['user_id']
+                        ]);
+                    }
+                    
+                    $db->commit();
+                    $_SESSION['success'] = "Stock levels updated successfully";
+                } catch (Exception $e) {
+                    $db->rollBack();
+                    throw $e;
+                }
+                break;
 
             default:
                 throw new Exception("Invalid action");
