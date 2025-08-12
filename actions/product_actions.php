@@ -1,8 +1,9 @@
 <?php
-// Enable error reporting
-ini_set('display_errors', 1);
+// Prevent direct output of errors
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
-// At the top of product_actions.php, after the initial requires
+// Log errors instead of displaying them
+ini_set('log_errors', 1);
 error_log("Request received: " . print_r($_POST, true));
 
 // Add this function for debugging
@@ -67,9 +68,9 @@ try {
                 $stmt = $db->prepare("
                     INSERT INTO products (
                         code, name, category_id, unit_type, quantity, 
-                        min_stock_level, buying_price, selling_price, 
+                        min_stock_level, buying_price, vendor_price, selling_price, 
                         description, status, created_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
 
                 $stmt->execute([
@@ -80,6 +81,7 @@ try {
                     $_POST['quantity'],
                     $_POST['min_stock_level'],
                     $_POST['buying_price'],
+                    $_POST['vendor_price'],
                     $_POST['selling_price'],
                     $_POST['description'] ?? '',
                     $_POST['status'] ?? 'active',
@@ -97,7 +99,7 @@ try {
                 $stmt = $db->prepare("
                     UPDATE products 
                     SET code = ?, name = ?, category_id = ?, unit_type = ?,
-                        quantity = ?, min_stock_level = ?, buying_price = ?,
+                        quantity = ?, min_stock_level = ?, buying_price = ?, vendor_price = ?,
                         selling_price = ?, description = ?, status = ?,
                         updated_at = NOW(), updated_by = ?
                     WHERE id = ?
@@ -111,6 +113,7 @@ try {
                     $_POST['quantity'],
                     $_POST['min_stock_level'],
                     $_POST['buying_price'],
+                    $_POST['vendor_price'],
                     $_POST['selling_price'],
                     $_POST['description'] ?? '',
                     $_POST['status'] ?? 'active',
@@ -122,8 +125,12 @@ try {
                 break;
 
             case 'delete':
+                header('Content-Type: application/json');
+                
                 if (empty($_POST['id'])) {
-                    throw new Exception("Product ID is required");
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Product ID is required']);
+                    exit;
                 }
 
                 try {
@@ -146,19 +153,22 @@ try {
                     }
 
                     $db->commit();
-                    $_SESSION['success'] = "Product deleted successfully";
-
-                    // Return success response
-                    http_response_code(200);
-                    echo "Success";
+                    
+                    // Return JSON response
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'message' => 'Product deleted successfully']);
+                    exit;
                 } catch (Exception $e) {
-                    $db->rollBack();
+                    if ($db->inTransaction()) {
+                        $db->rollBack();
+                    }
+                    header('Content-Type: application/json');
                     http_response_code(500);
-                    echo "Error: " . $e->getMessage();
+                    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
                     exit;
                 }
-                break;
-                case 'add_stock':
+
+            case 'add_stock':
                     if (empty($_POST['product_id']) || !isset($_POST['quantity'])) {
                         throw new Exception("Product and quantity are required");
                     }
@@ -275,9 +285,22 @@ try {
         }
     }
 } catch (Exception $e) {
-    $_SESSION['error'] = $e->getMessage();
+    // Log the error
+    error_log("Error in product_actions.php: " . $e->getMessage());
+    
+    // Always set content type for consistency
+    header('Content-Type: application/json');
+    
+    // If headers have already been sent, log the error
+    if (headers_sent($file, $line)) {
+        error_log("Headers already sent in $file:$line");
+    }
+    
+    // Return JSON response for all requests
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
+    exit;
 }
-
-// Redirect back
-header('Location: ../products.php');
-exit;

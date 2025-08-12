@@ -35,7 +35,7 @@ try {
     $query = "SELECT p.*, c.name as category_name 
               FROM products p 
               LEFT JOIN categories c ON p.category_id = c.id 
-              WHERE 1=1";
+              WHERE p.status != 'deleted'";
     $params = [];
 
     if ($search) {
@@ -202,6 +202,7 @@ include 'templates/header.php';
                                     <th>Category</th>
                                     <th>Quantity</th>
                                     <th>Buying Price</th>
+                                    <th>Vendor Price</th>
                                     <th>Selling Price</th>
                                     <th>Status</th>
                                     <th class="w-1">Actions</th>
@@ -237,6 +238,7 @@ include 'templates/header.php';
                                             </span>
                                         </td>
                                         <td>₦<?= number_format($product['buying_price'], 2) ?></td>
+                                        <td>₦<?= number_format($product['vendor_price'], 2) ?></td>
                                         <td>₦<?= number_format($product['selling_price'], 2) ?></td>
                                         <td>
                                             <span
@@ -353,12 +355,17 @@ include 'templates/header.php';
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label required">Buying Price</label>
                             <input type="number" class="form-control" name="buying_price" id="edit_buying_price"
                                 step="0.01" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label required">Vendor Price</label>
+                            <input type="number" class="form-control" name="vendor_price" id="edit_vendor_price"
+                                step="0.01" required>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label required">Selling Price</label>
                             <input type="number" class="form-control" name="selling_price" id="edit_selling_price"
                                 step="0.01" required>
@@ -471,11 +478,15 @@ include 'templates/header.php';
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label required">Buying Price</label>
                             <input type="number" class="form-control" name="buying_price" step="0.01" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label required">Vendor Price</label>
+                            <input type="number" class="form-control" name="vendor_price" step="0.01" required>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label required">Selling Price</label>
                             <input type="number" class="form-control" name="selling_price" step="0.01" required>
                         </div>
@@ -602,26 +613,29 @@ include 'templates/header.php';
 <div class="modal modal-blur fade" id="deleteProductModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-body">
-                <div class="modal-title">Are you sure?</div>
-                <div>You are about to delete this product. This action cannot be undone.</div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger ms-auto" id="confirmDelete">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <line x1="4" y1="7" x2="20" y2="7" />
-                        <line x1="10" y1="11" x2="10" y2="17" />
-                        <line x1="14" y1="11" x2="14" y2="17" />
-                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                    </svg>
-                    Yes, delete product
-                </button>
-            </div>
+            <form id="deleteProductForm" action="/inventory/actions/delete_product.php" method="post">
+                <input type="hidden" name="id" id="delete_product_id">
+                <div class="modal-body">
+                    <div class="modal-title">Are you sure?</div>
+                    <div>You are about to delete this product. This action cannot be undone.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <line x1="4" y1="7" x2="20" y2="7" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                        </svg>
+                        Yes, delete product
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -670,10 +684,78 @@ include 'templates/header.php';
         </div>
     </div>
 </div>
-<!-- Initialize DataTable and handle modals -->
+<!-- Load Bootstrap JS and initialize DataTable and handle modals -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/delete-product.js"></script>
 <script>
-    // Add this to your existing script section
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataTable with pagination
+        const table = new DataTable('.table', {
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+        });
+
+        // Handle Delete Product
+        const deleteProductModal = document.getElementById('deleteProductModal');
+        if (deleteProductModal) {
+            let productIdToDelete;
+            
+            deleteProductModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                productIdToDelete = button.getAttribute('data-product-id');
+            });
+
+            const deleteForm = document.getElementById('deleteProductForm');
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    fetch('/inventory/actions/delete_product.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Close modal using Bootstrap
+                            const modalInstance = bootstrap.Modal.getInstance(deleteProductModal);
+                            modalInstance.hide();
+                            
+                            // Show success message
+                            const container = document.querySelector('.page-body .container-xl');
+                            if (container) {
+                                const alertDiv = document.createElement('div');
+                                alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
+                                alertDiv.innerHTML = `
+                                    ${data.message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                `;
+                                container.prepend(alertDiv);
+                            }
+
+                            // Refresh page after a brief delay
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            alert('Error deleting product: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting product: ' + error.message);
+                    });
+                });
+            }
+        }
+        
         // Handle unit type display in Add Stock modal
         const stockModal = document.getElementById('addStockModal');
         if (stockModal) {
@@ -686,9 +768,7 @@ include 'templates/header.php';
                 unitSpan.textContent = unit || 'units';
             });
         }
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add this at the beginning of your DOMContentLoaded event listener
+
         const CURRENT_TIME = '2025-03-10 13:05:04';
         const CURRENT_USER = 'jarferh';
 
@@ -760,13 +840,15 @@ include 'templates/header.php';
                             modal.hide();
 
                             // Show success message
+                            const container = document.querySelector('.page-body .container-xl');
+                            const firstCard = container.querySelector('.card');
                             const alertDiv = document.createElement('div');
-                            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                            alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
                             alertDiv.innerHTML = `
-                    Product added successfully
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                            document.querySelector('.container-xl').insertBefore(alertDiv, document.querySelector('.card'));
+                                Product added successfully
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
+                            container.insertBefore(alertDiv, firstCard);
 
                             // Reload page after brief delay
                             setTimeout(() => {
@@ -907,17 +989,25 @@ include 'templates/header.php';
                 deleteForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
-                    fetch(this.action, {
+                    fetch('/inventory/actions/delete_product.php', {
                             method: 'POST',
-                            body: new FormData(this)
+                            body: new FormData(this),
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
                         })
                         .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
+                            const contentType = response.headers.get('content-type');
+                            if (!contentType || !contentType.includes('application/json')) {
+                                throw new Error('Server returned non-JSON response');
                             }
-                            return response.text();
+                            return response.json();
                         })
-                        .then(result => {
+                        .then(data => {
+                            if (!data.success) {
+                                throw new Error(data.message || 'Failed to delete product');
+                            }
+
                             // Close the modal
                             const modal = bootstrap.Modal.getInstance(deleteProductModal);
                             modal.hide();
@@ -925,7 +1015,7 @@ include 'templates/header.php';
                             // Show success message
                             const successDiv = document.createElement('div');
                             successDiv.className = 'alert alert-success';
-                            successDiv.textContent = 'Product deleted successfully';
+                            successDiv.textContent = data.message;
                             document.querySelector('.container-xl').insertBefore(successDiv, document.querySelector('.card'));
 
                             // Reload the page after a short delay
@@ -952,23 +1042,28 @@ include 'templates/header.php';
                     event.preventDefault();
                     event.stopPropagation();
                 } else {
-                    // Log form submission
-                    console.log('Form submitted:', new FormData(form));
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
+            // Log form submission
+            console.log('Form submitted:', new FormData(form));
+        }
+        form.classList.add('was-validated');
+    }, false);
+});
 
-        // Display session messages
-        <?php if (isset($_SESSION['error'])): ?>
-            alert('Error: <?= addslashes($_SESSION['error']) ?>');
-        <?php unset($_SESSION['error']);
-        endif; ?>
+// Display session messages
+<?php if (isset($_SESSION['error'])): ?>
+    showAlert('error', '<?= addslashes($_SESSION['error']) ?>');
+<?php unset($_SESSION['error']); endif; ?>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            alert('Success: <?= addslashes($_SESSION['success']) ?>');
-        <?php unset($_SESSION['success']);
-        endif; ?>
+<?php if (isset($_SESSION['success'])): ?>
+    showAlert('success', '<?= addslashes($_SESSION['success']) ?>');
+<?php unset($_SESSION['success']); endif; ?>
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+    document.querySelector('.container-xl').insertBefore(alertDiv, document.querySelector('.card'));
+}
     });
 </script>
 <?php

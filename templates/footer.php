@@ -36,5 +36,8 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="assets/js/dashboard.js"></script>
+    <?php if (basename($_SERVER['PHP_SELF']) === 'customer.php'): ?>
+    <script src="assets/js/customer.js"></script>
+    <?php endif; ?>
 </body>
 </html>

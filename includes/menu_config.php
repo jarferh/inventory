@@ -4,9 +4,15 @@ function getMenuByRole($role)
     $defaultMenus = [
         [
             'title' => 'Dashboard',
-            'icon' => 'dashboard',
+            'icon' => 'ti ti-dashboard',
             'link' => 'index.php',
             'permission' => 'view_dashboard'
+        ],
+        [
+            'title' => 'Customers',
+            'icon' => 'ti ti-users',
+            'link' => 'customer.php',
+            'permission' => 'manage_customers'
         ]
     ];
 
@@ -20,13 +26,13 @@ function getMenuByRole($role)
             ],
             [
                 'title' => 'Products',
-                'icon' => 'package',
+                'icon' => 'ti ti-package',
                 'link' => 'products.php',
                 'permission' => 'manage_products'
             ],
             [
                 'title' => 'Sales',
-                'icon' => 'shopping-cart',
+                'icon' => 'ti ti-shopping-cart',
                 'link' => 'sales.php',
                 'permission' => 'manage_sales'
             ],
@@ -38,15 +44,22 @@ function getMenuByRole($role)
             ],
             [
                 'title' => 'Reports',
-                'icon' => 'report-analytics',
+                'icon' => 'ti ti-report-analytics',
                 'link' => 'reports.php',
                 'permission' => 'view_reports'
             ],
             [
                 'title' => 'Users',
-                'icon' => 'users',
+                'icon' => 'ti ti-users',
                 'link' => 'users.php',
                 'permission' => 'manage_users'
+            ],
+            [
+                'title' => 'Customers',
+                'icon' => 'ti ti-users',
+
+                'link' => 'customer.php',
+                'permission' => 'manage_customers'
             ],
             [
                 'title' => 'Profile',
@@ -56,7 +69,7 @@ function getMenuByRole($role)
             ],
             [
                 'title' => 'Settings',
-                'icon' => 'settings',
+                'icon' => 'ti ti-settings',
                 'link' => 'settings.php',
                 'permission' => 'manage_settings'
             ]
@@ -97,6 +110,12 @@ function getMenuByRole($role)
                 'icon' => 'ti ti-user',
                 'link' => 'profile.php',
                 'permission' => 'profile'
+            ],
+            [
+                'title' => 'Customers',
+                'icon' => 'ti ti-users',
+                'link' => 'customer.php',
+                'permission' => 'manage_customers'
             ]
         ],
         'cashier' => [
@@ -123,6 +142,13 @@ function getMenuByRole($role)
                 'icon' => 'ti ti-user',
                 'link' => 'profile.php',
                 'permission' => 'profile'
+            ],
+            [
+                'title' => 'Customers',
+                'icon' => 'ti ti-users',
+
+                'link' => 'customer.php',
+                'permission' => 'manage_customers'
             ]
         ]
     ];
