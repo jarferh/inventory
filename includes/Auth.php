@@ -6,6 +6,7 @@ class Auth
     public function __construct()
     {
         if (session_status() === PHP_SESSION_NONE) {
+            require_once __DIR__ . '/../config/session_config.php';
             session_start();
         }
         $this->db = Database::getInstance()->getConnection();

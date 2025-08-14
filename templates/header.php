@@ -1,6 +1,7 @@
 <?php
 // Ensure session is started
 if (session_status() === PHP_SESSION_NONE) {
+    require_once __DIR__ . '/../config/session_config.php';
     session_start();
 }
 
@@ -29,8 +30,9 @@ $CURRENT_USER = $_SESSION['username'] ?? 'Guest';
     <title><?= isset($pageTitle) ? $pageTitle . ' - ' : '' ?>Sahama Agrovet POS</title>
 
     <!-- CSS files -->
-    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet" />
+    <link href="assets/vendor/tabler/css/tabler.min.css" rel="stylesheet" />
+    <link href="assets/vendor/tabler/css/tabler-icons.min.css" rel="stylesheet" />
+    <link href="assets/vendor/tabler/css/tabler-icons-custom.css" rel="stylesheet" />
 
     <!-- Custom CSS -->
     <style>

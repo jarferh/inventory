@@ -7,6 +7,13 @@ require_once '../includes/Auth.php';
 $auth = new Auth();
 $auth->requireLogin();
 
+// Helper function to safely format numbers
+function safe_number_format($value, $decimals = 2) {
+    // Convert to float and handle empty/invalid values
+    $number = floatval($value);
+    return number_format($number, $decimals);
+}
+
 // Set error handling
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -197,9 +204,9 @@ try {
                         <?= htmlspecialchars($item['product_name']) ?><br>
                         <small>Code: <?= htmlspecialchars($item['product_code']) ?></small>
                     </td>
-                    <td><?= number_format($item['quantity']) ?></td>
-                    <td>₦<?= number_format($item['price'], 2) ?></td>
-                    <td>₦<?= number_format($item['total'], 2) ?></td>
+                    <td><?= safe_number_format($item['quantity'], 0) ?></td>
+                    <td><?= CURRENCY ?><?= safe_number_format($item['price']) ?></td>
+                    <td><?= CURRENCY ?><?= safe_number_format($item['total']) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

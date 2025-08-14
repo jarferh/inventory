@@ -4,17 +4,6 @@ ini_set('display_errors', 0);
 error_reporting(E_ALL);
 // Log errors instead of displaying them
 ini_set('log_errors', 1);
-error_log("Request received: " . print_r($_POST, true));
-
-// Add this function for debugging
-function debug_to_console($data)
-{
-    $output = $data;
-    if (is_array($output))
-        $output = implode(',', $output);
-
-    echo "<script>console.log('Debug Objects: " . $output . "' );</script>";
-}
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -35,6 +24,9 @@ $db = Database::getInstance()->getConnection();
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        $response = ['success' => false, 'message' => ''];
 
         switch ($action) {
             case 'add_category':
@@ -53,7 +45,10 @@ try {
                     $_SESSION['user_id'] ?? 1
                 ]);
 
-                $_SESSION['success'] = "Category added successfully";
+                $response = [
+                    'success' => true,
+                    'message' => 'Category added successfully'
+                ];
                 break;
 
             case 'add':
@@ -172,6 +167,7 @@ try {
                     if (empty($_POST['product_id']) || !isset($_POST['quantity'])) {
                         throw new Exception("Product and quantity are required");
                     }
+                    $response = ['success' => false, 'message' => ''];
                     
                     // Start transaction
                     $db->beginTransaction();
@@ -217,7 +213,10 @@ try {
                         ]);
                         
                         $db->commit();
-                        $_SESSION['success'] = "Stock updated successfully";
+                        $response = [
+                            'success' => true,
+                            'message' => 'Stock updated successfully'
+                        ];
                     } catch (Exception $e) {
                         $db->rollBack();
                         throw $e;
@@ -284,23 +283,36 @@ try {
                 throw new Exception("Invalid action");
         }
     }
+    if ($response['success']) {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit;
+        } else {
+            $_SESSION['success'] = $response['message'];
+            header('Location: ../products.php');
+            exit;
+        }
+    }
 } catch (Exception $e) {
-    // Log the error
     error_log("Error in product_actions.php: " . $e->getMessage());
     
-    // Always set content type for consistency
-    header('Content-Type: application/json');
-    
-    // If headers have already been sent, log the error
-    if (headers_sent($file, $line)) {
-        error_log("Headers already sent in $file:$line");
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    } else {
+        $_SESSION['error'] = $e->getMessage();
+        header('Location: ../products.php');
     }
-    
-    // Return JSON response for all requests
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
     exit;
 }
+
+// If we get here somehow, redirect back
+if (!$isAjax) {
+    header('Location: ../products.php');
+}
+exit;

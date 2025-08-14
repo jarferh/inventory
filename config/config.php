@@ -23,10 +23,6 @@ ini_set('display_errors', 1);
 // Set timezone
 date_default_timezone_set(TIMEZONE);
 
-// Session Configuration
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
 // Profile settings
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif']);

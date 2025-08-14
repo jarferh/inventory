@@ -394,11 +394,18 @@ include 'templates/header.php';
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Customer</label>
-                            <select class="form-select" name="customer_id">
-                                <option value="">Walk-in Customer</option>
-                                <!-- Populate with customers -->
+                            <label class="form-label">Customer Type</label>
+                            <select class="form-select" name="customer_type" id="customerType">
+                                <option value="walk-in">Walk-in Customer</option>
+                                <option value="vendor">Vendor</option>
+                                <option value="registered">Registered Customer</option>
                             </select>
+                            <div class="mt-2" id="registeredCustomerSection" style="display: none;">
+                                <label class="form-label">Select Customer</label>
+                                <select class="form-select" name="customer_id" id="registeredCustomer">
+                                    <option value="">Select Customer</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Payment Status</label>
@@ -712,6 +719,84 @@ include 'templates/header.php';
         const CURRENT_TIME = '2025-02-28 14:56:13';
         const CURRENT_USER = 'jarferh';
 
+        // Handle customer type selection
+        const customerTypeSelect = document.getElementById('customerType');
+        const registeredCustomerSection = document.getElementById('registeredCustomerSection');
+        const registeredCustomerSelect = document.getElementById('registeredCustomer');
+
+        // Function to update prices based on customer type
+        function updatePricesForCustomerType(customerType) {
+            const rows = document.querySelectorAll('#itemsTable tbody tr');
+            rows.forEach(row => {
+                const productSelect = row.querySelector('.product-select');
+                const priceInput = row.querySelector('.price-input');
+                const option = productSelect.selectedOptions[0];
+                
+                if (option && option.dataset.price) {
+                    let price;
+                    
+                    // Apply different pricing based on customer type
+                    if (customerType === 'vendor') {
+                        // For vendors, use the specific vendor price
+                        price = parseFloat(option.dataset.vendorPrice || option.dataset.price);
+                    } else {
+                        // Both walk-in and registered customers get the regular selling price
+                        price = parseFloat(option.dataset.price);
+                    }
+                    
+                    priceInput.value = price.toFixed(2);
+                }
+            });
+            
+            // Recalculate totals
+            calculateTotals();
+        }
+
+        // Add customer type change handler
+        if (customerTypeSelect) {
+            customerTypeSelect.addEventListener('change', function() {
+                if (this.value === 'registered') {
+                    registeredCustomerSection.style.display = 'block';
+                    loadRegisteredCustomers();
+                } else {
+                    registeredCustomerSection.style.display = 'none';
+                    registeredCustomerSelect.value = '';
+                }
+                
+                // Update prices when customer type changes
+                updatePricesForCustomerType(this.value);
+            });
+        }
+
+        // Function to load registered customers
+        function loadRegisteredCustomers() {
+            fetch('actions/get_customers.php')
+                .then(response => response.json())
+                .then(customers => {
+                    registeredCustomerSelect.innerHTML = '<option value="">Select Customer</option>';
+                    customers.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer.id;
+                        option.textContent = customer.name;
+                        registeredCustomerSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading customers:', error));
+        }
+
+        // Handle customer type change
+        if (customerTypeSelect) {
+            customerTypeSelect.addEventListener('change', function() {
+                if (this.value === 'registered') {
+                    registeredCustomerSection.style.display = 'block';
+                    loadRegisteredCustomers();
+                } else {
+                    registeredCustomerSection.style.display = 'none';
+                    registeredCustomerSelect.value = '';
+                }
+            });
+        }
+
         // Initialize DataTable only for the main sales table
         const salesTable = new DataTable('.card-table', {
             pageLength: 10,
@@ -832,6 +917,7 @@ include 'templates/header.php';
                             option.value = product.id;
                             option.textContent = `${product.name} (${product.quantity} ${product.unit_type} available)`;
                             option.dataset.price = product.selling_price;
+                            option.dataset.vendorPrice = product.vendor_price;
                             option.dataset.available = product.quantity;
                             option.dataset.unit = product.unit_type;
                             select.appendChild(option);
@@ -876,7 +962,19 @@ include 'templates/header.php';
                     const priceInput = row.querySelector('.price-input');
 
                     if (option && option.dataset.price) {
-                        priceInput.value = option.dataset.price;
+                        const customerType = document.getElementById('customerType').value;
+                        let price;
+                        
+                        // Apply different pricing based on customer type
+                        if (customerType === 'vendor') {
+                            // For vendors, use the specific vendor price
+                            price = parseFloat(option.dataset.vendorPrice || option.dataset.price);
+                        } else {
+                            // Both walk-in and registered customers get the regular selling price
+                            price = parseFloat(option.dataset.price);
+                        }
+                        
+                        priceInput.value = price.toFixed(2);
                         quantityInput.max = option.dataset.available;
                         quantityInput.placeholder = `Max: ${option.dataset.available} ${option.dataset.unit}`;
                         quantityInput.value = '1'; // Set default quantity to 1

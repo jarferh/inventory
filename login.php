@@ -102,8 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login - Samah Agrovet POS</title>
 
     <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="assets/vendor/tabler/css/tabler.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/vendor/animate/animate.min.css" />
 
     <style>
         :root {
@@ -346,7 +346,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+    <script src="assets/vendor/tabler/js/tabler.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Toggle password visibility

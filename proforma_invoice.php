@@ -148,7 +148,7 @@ include 'templates/header.php';
                 <!-- Proforma preview will be loaded here -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-link link-secondary" onclick="closeModal()">Close</button>
                 <button type="button" class="btn btn-primary" onclick="printProforma()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -171,12 +171,46 @@ include 'templates/header.php';
 
     let itemCounter = 0;
 
+    function closeModal() {
+        const modalElement = document.getElementById('proformaModal');
+        if (!modalElement) return;
+
+        try {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
+        } catch (e) {
+            modalElement.style.display = 'none';
+            modalElement.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize first row
         addItem();
 
         // Setup real-time calculation listeners
         setupCalculationListeners();
+
+        // Setup modal close handler for the X button
+        const closeButton = document.querySelector('[data-bs-dismiss="modal"]');
+        if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+        }
     });
 
     function setupCalculationListeners() {
@@ -348,6 +382,39 @@ include 'templates/header.php';
         return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
+    function printProforma() {
+        const printContents = document.getElementById('proformaPreview').innerHTML;
+        const originalContents = document.body.innerHTML;
+
+        // Create a new window with just the proforma content
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Proforma Invoice</title>
+                <link href="assets/vendor/tabler/css/tabler.min.css" rel="stylesheet" />
+                <style>
+                    @media print {
+                        body { padding: 20px; }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContents}
+            </body>
+            </html>
+        `);
+
+        // Wait for resources to load
+        printWindow.document.addEventListener('DOMContentLoaded', function() {
+            printWindow.print();
+            // Close the window after printing (optional)
+            // printWindow.close();
+        });
+    }
+
     function generateProforma() {
         // Show loading state
         const generateButton = document.querySelector('button[onclick="generateProforma()"]');
@@ -447,8 +514,18 @@ include 'templates/header.php';
                         throw new Error('Preview container not found');
                     }
                     previewDiv.innerHTML = html;
-                    const modal = new bootstrap.Modal(document.getElementById('proformaModal'));
-                    modal.show();
+                    const modalElement = document.getElementById('proformaModal');
+                    let modal;
+                    try {
+                        // Try to use Bootstrap's Modal
+                        modal = new bootstrap.Modal(modalElement);
+                    } catch (e) {
+                        console.warn('Bootstrap Modal not available, using fallback');
+                        modalElement.style.display = 'block';
+                        modalElement.classList.add('show');
+                        document.body.classList.add('modal-open');
+                    }
+                    if (modal) modal.show();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -469,5 +546,10 @@ include 'templates/header.php';
         }
     }
 </script>
+
+<!-- Load JavaScript Dependencies -->
+<script src="assets/vendor/jquery/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="assets/vendor/tabler/js/tabler.min.js"></script>
 
 <?php include 'templates/footer.php'; ?>

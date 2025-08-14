@@ -30,11 +30,12 @@
     </div>
 
     <!-- Core JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="assets/vendor/tabler/js/tabler.min.js"></script>
+    <script src="assets/vendor/chartjs/chart.umd.min.js"></script>
+    <script src="assets/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="assets/vendor/datatables/dataTables.bootstrap5.min.js"></script>
     <script src="assets/js/dashboard.js"></script>
     <?php if (basename($_SERVER['PHP_SELF']) === 'customer.php'): ?>
     <script src="assets/js/customer.js"></script>

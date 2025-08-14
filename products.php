@@ -558,7 +558,7 @@ include 'templates/header.php';
                 <h5 class="modal-title">Add New Category</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addCategoryForm" action="actions/product_actions.php" method="post">
+            <form id="addCategoryForm">
                 <input type="hidden" name="action" value="add_category">
                 <div class="modal-body">
                     <div class="mb-3">
@@ -1034,6 +1034,108 @@ include 'templates/header.php';
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle Add Stock Form submission
+        const addStockForm = document.getElementById('addStockForm');
+        if (addStockForm) {
+            addStockForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!this.checkValidity()) {
+                    e.stopPropagation();
+                    this.classList.add('was-validated');
+                    return;
+                }
+
+                const formData = new FormData(this);
+                
+                fetch('actions/product_actions.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addStockModal'));
+                        modal.hide();
+                        
+                        // Show success message
+                        const container = document.querySelector('.page-body .container-xl');
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
+                        alertDiv.innerHTML = `
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        container.prepend(alertDiv);
+                        
+                        // Refresh page after a brief delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        throw new Error(data.message || 'Error updating stock');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating stock: ' + error.message);
+                });
+            });
+        }
+
+        // Handle Add Category Form submission
+        const addCategoryForm = document.getElementById('addCategoryForm');
+        if (addCategoryForm) {
+            addCategoryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                formData.append('created_at', CURRENT_TIME);
+                formData.append('created_by', CURRENT_USER);
+
+                fetch('actions/product_actions.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                        modal.hide();
+                        
+                        // Show success message
+                        const container = document.querySelector('.page-body .container-xl');
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
+                        alertDiv.innerHTML = `
+                            ${data.message || 'Category added successfully'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        container.prepend(alertDiv);
+                        
+                        // Refresh page after a brief delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        throw new Error(data.message || 'Error adding category');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error adding category: ' + error.message);
+                });
+            });
+        }
+
         // Form validation
         const forms = document.querySelectorAll('.needs-validation');
         Array.from(forms).forEach(form => {
