@@ -38,6 +38,7 @@ try {
             'unit_type' => $product['unit_type'],
             'quantity' => $product['quantity'],
             'selling_price' => $product['selling_price'],
+            'vendor_price' => $product['vendor_price'],
             'buying_price' => $product['buying_price'],
             'display_name' => sprintf(
                 "%s - %s (%s %s available) - ₦%s", 

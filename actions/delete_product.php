@@ -27,39 +27,38 @@ try {
 
     $db->beginTransaction();
 
-    // Check if product exists and if it has any sales
-    $stmt = $db->prepare("
-        SELECT p.id, 
-               CASE WHEN si.product_id IS NOT NULL THEN 1 ELSE 0 END as has_sales
-        FROM products p
-        LEFT JOIN sale_items si ON p.id = si.product_id
-        WHERE p.id = ?
-        LIMIT 1
-    ");
+    // Check for references in sale_items
+    $stmt = $db->prepare("SELECT COUNT(*) FROM sale_items WHERE product_id = ?");
     $stmt->execute([$_POST['id']]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    $saleItemsCount = (int)$stmt->fetchColumn();
 
-    if (!$product) {
-        throw new Exception('Product not found');
-    }
+    // Check for references in stock_history
+    $stmt = $db->prepare("SELECT COUNT(*) FROM stock_history WHERE product_id = ?");
+    $stmt->execute([$_POST['id']]);
+    $stockHistoryCount = (int)$stmt->fetchColumn();
 
-    if ($product['has_sales']) {
-        // If product has sales, perform soft delete
+    if ($saleItemsCount > 0 || $stockHistoryCount > 0) {
+        // Can't hard delete because of foreign key constraints — perform soft delete
         $stmt = $db->prepare("UPDATE products SET status = 'deleted', updated_at = NOW() WHERE id = ?");
         $result = $stmt->execute([$_POST['id']]);
-        
+
         if ($result) {
+            $msg = 'Product has been marked as deleted';
+            if ($saleItemsCount > 0) $msg .= ' (has associated sales)';
+            if ($stockHistoryCount > 0) $msg .= ' (has stock history entries)';
+
             echo json_encode([
                 'success' => true,
-                'message' => 'Product has been marked as deleted because it has associated sales records'
+                'message' => $msg
             ]);
             $db->commit();
             exit;
         }
+
         throw new Exception('Failed to update product status');
     }
 
-    // If no sales, proceed with hard delete
+    // No references found — safe to hard delete
     $stmt = $db->prepare("DELETE FROM products WHERE id = ?");
     $result = $stmt->execute([$_POST['id']]);
 

@@ -714,39 +714,61 @@ include 'templates/header.php';
                     const formData = new FormData(this);
                     fetch('/inventory/actions/delete_product.php', {
                         method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
                         }
-                        return response.json();
+                    })
+                    .then(async response => {
+                        // Try to parse a JSON body even if response.ok is false
+                        let data = null;
+                        const contentType = response.headers.get('content-type') || '';
+                        if (contentType.includes('application/json')) {
+                            try {
+                                data = await response.json();
+                            } catch (err) {
+                                data = { success: false, message: 'Invalid JSON response from server' };
+                            }
+                        } else {
+                            // fallback to text
+                            const text = await response.text();
+                            try {
+                                data = JSON.parse(text);
+                            } catch (err) {
+                                data = { success: response.ok, message: text || response.statusText };
+                            }
+                        }
+
+                        if (response.ok && data && data.success) {
+                            return data;
+                        }
+
+                        // If server returned an error status or success === false, surface the message
+                        const msg = (data && data.message) ? data.message : `Server returned ${response.status} ${response.statusText}`;
+                        throw new Error(msg);
                     })
                     .then(data => {
-                        if (data.success) {
-                            // Close modal using Bootstrap
-                            const modalInstance = bootstrap.Modal.getInstance(deleteProductModal);
-                            modalInstance.hide();
-                            
-                            // Show success message
-                            const container = document.querySelector('.page-body .container-xl');
-                            if (container) {
-                                const alertDiv = document.createElement('div');
-                                alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
-                                alertDiv.innerHTML = `
-                                    ${data.message}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                `;
-                                container.prepend(alertDiv);
-                            }
-
-                            // Refresh page after a brief delay
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        } else {
-                            alert('Error deleting product: ' + data.message);
+                        // Close modal using Bootstrap
+                        const modalInstance = bootstrap.Modal.getInstance(deleteProductModal);
+                        if (modalInstance) modalInstance.hide();
+                        
+                        // Show success message
+                        const container = document.querySelector('.page-body .container-xl');
+                        if (container) {
+                            const alertDiv = document.createElement('div');
+                            alertDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
+                            alertDiv.innerHTML = `
+                                ${data.message || 'Product deleted successfully'}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
+                            container.prepend(alertDiv);
                         }
+
+                        // Refresh page after a brief delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -983,52 +1005,52 @@ include 'templates/header.php';
                 document.getElementById('delete_product_id').value = productId;
             });
 
-            // Handle delete form submission
-            const deleteForm = document.getElementById('deleteProductForm');
-            if (deleteForm) {
-                deleteForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
+        //     // Handle delete form submission
+        //     const deleteForm = document.getElementById('deleteProductForm');
+        //     if (deleteForm) {
+        //         deleteForm.addEventListener('submit', function(e) {
+        //             e.preventDefault();
 
-                    fetch('/inventory/actions/delete_product.php', {
-                            method: 'POST',
-                            body: new FormData(this),
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => {
-                            const contentType = response.headers.get('content-type');
-                            if (!contentType || !contentType.includes('application/json')) {
-                                throw new Error('Server returned non-JSON response');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (!data.success) {
-                                throw new Error(data.message || 'Failed to delete product');
-                            }
+        //             fetch('/inventory/actions/delete_product.php', {
+        //                     method: 'POST',
+        //                     body: new FormData(this),
+        //                     headers: {
+        //                         'X-Requested-With': 'XMLHttpRequest'
+        //                     }
+        //                 })
+        //                 .then(response => {
+        //                     const contentType = response.headers.get('content-type');
+        //                     if (!contentType || !contentType.includes('application/json')) {
+        //                         throw new Error('Server returned non-JSON response');
+        //                     }
+        //                     return response.json();
+        //                 })
+        //                 .then(data => {
+        //                     if (!data.success) {
+        //                         throw new Error(data.message || 'Failed to delete product');
+        //                     }
 
-                            // Close the modal
-                            const modal = bootstrap.Modal.getInstance(deleteProductModal);
-                            modal.hide();
+        //                     // Close the modal
+        //                     const modal = bootstrap.Modal.getInstance(deleteProductModal);
+        //                     modal.hide();
 
-                            // Show success message
-                            const successDiv = document.createElement('div');
-                            successDiv.className = 'alert alert-success';
-                            successDiv.textContent = data.message;
-                            document.querySelector('.container-xl').insertBefore(successDiv, document.querySelector('.card'));
+        //                     // Show success message
+        //                     const successDiv = document.createElement('div');
+        //                     successDiv.className = 'alert alert-success';
+        //                     successDiv.textContent = data.message;
+        //                     document.querySelector('.container-xl').insertBefore(successDiv, document.querySelector('.card'));
 
-                            // Reload the page after a short delay
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Error deleting product: ' + error.message);
-                        });
-                });
-            }
+        //                     // Reload the page after a short delay
+        //                     setTimeout(() => {
+        //                         window.location.reload();
+        //                     }, 1000);
+        //                 })
+        //                 .catch(error => {
+        //                     console.error('Error:', error);
+        //                     // alert('Error deleting product: ' + error.message);
+        //                 });
+        //         });
+        //     }
         }
     });
 </script>
